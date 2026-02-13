@@ -1,6 +1,6 @@
 package com.codingcat.aipersonalfinance.module.security.token;
 
-import com.codingcat.commerce.domain.BaseEntity;
+import com.codingcat.aipersonalfinance.domain.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

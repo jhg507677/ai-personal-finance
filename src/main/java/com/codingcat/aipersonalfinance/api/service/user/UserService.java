@@ -21,8 +21,6 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final AuthService authService;
 
-
-
   /* 회원가입 */
   public ResponseEntity<ApiResponseVo<?>> signUp(AddUserRequest request){
     // 비밀번호 암호화
@@ -43,7 +41,8 @@ public class UserService {
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
       throw new CustomException(HttpStatus.BAD_REQUEST, "sm.common.fail.invalid_invalid_request","로그인 할 수없는 계정입니다.");
     }
-    return authService.generateLoginToken(response, user.toAuth());
+    ApiResponseVo<?> tokenResponse = authService.generateLoginToken(response, user.toAuth());
+    return ResponseEntity.ok(tokenResponse);
   }
 
 

@@ -1,6 +1,6 @@
 package com.codingcat.aipersonalfinance.module.security;
 
-import com.codingcat.commerce.domain.admin.Admin;
+import com.codingcat.aipersonalfinance.domain.admin.Admin;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;

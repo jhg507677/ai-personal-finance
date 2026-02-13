@@ -1,7 +1,6 @@
-package com.codingcat.aipersonalfinance.domain.activity;
+package com.codingcat.aipersonalfinance.domain.ledger;
 
 public enum Category {
-
   FOOD("식비"),
   TRANSPORT("교통비"),
   CAFE("카페/간식"),

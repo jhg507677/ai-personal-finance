@@ -1,6 +1,6 @@
 package com.codingcat.aipersonalfinance.module.exception;
 
-import com.codingcat.commerce.module.model.ApiResponseVo;
+import com.codingcat.aipersonalfinance.module.model.ApiResponseVo;
 import io.swagger.v3.oas.annotations.Hidden;
 import java.nio.charset.StandardCharsets;
 import org.springframework.http.HttpHeaders;

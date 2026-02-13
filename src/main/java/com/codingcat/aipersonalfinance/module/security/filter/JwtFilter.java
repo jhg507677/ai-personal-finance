@@ -3,6 +3,7 @@ package com.codingcat.aipersonalfinance.module.security.filter;
 import com.codingcat.aipersonalfinance.module.model.ServiceType;
 import com.codingcat.aipersonalfinance.module.security.AdminDetailService;
 import com.codingcat.aipersonalfinance.module.security.AdminPrincipal;
+import com.codingcat.aipersonalfinance.module.security.UserPrincipal;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider.JWT_STATUS;
 import jakarta.servlet.FilterChain;

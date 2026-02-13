@@ -1,7 +1,7 @@
 package com.codingcat.aipersonalfinance.module.security;
 
-import com.codingcat.commerce.domain.admin.Admin;
-import com.codingcat.commerce.domain.admin.AdminRepository;
+import com.codingcat.aipersonalfinance.domain.admin.Admin;
+import com.codingcat.aipersonalfinance.domain.admin.AdminRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

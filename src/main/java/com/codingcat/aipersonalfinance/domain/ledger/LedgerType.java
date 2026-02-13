@@ -1,4 +1,4 @@
-package com.codingcat.aipersonalfinance.domain.activity;
+package com.codingcat.aipersonalfinance.domain.ledger;
 
 public enum LedgerType {
   INCOME("수입"),
