@@ -1,0 +1,17 @@
+app:
+  server-url: http://localhost:8080
+spring:
+  application:
+    name: ai-personal-finance
+  spring:
+    security:
+      oauth2:
+        client:
+          registration:
+            google:
+              client-id: ${GOOGLE_CLIENT_ID}
+              client-secret: ${GOOGLE_CLIENT_SECRET}
+              redirect-uri: ${app.server-url}/api/public/user/login/oauth2/google
+              scope:
+                - email
+                - profile
