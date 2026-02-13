@@ -58,6 +58,16 @@ public class User extends BaseEntity {
     return user;
   }
 
+  public static User createTestOtherUser() {
+    User user = new User();
+    user.userId = "testId";
+    user.email = "other@test.com";
+    user.name = "다른유저";
+    user.password = "password";
+    user.role = "USER";
+    return user;
+  }
+
   public AuthDto toAuth(){
     return AuthDto.builder()
       .serviceType(ServiceType.USER)

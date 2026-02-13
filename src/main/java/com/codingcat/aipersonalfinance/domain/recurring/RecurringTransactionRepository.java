@@ -31,7 +31,7 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
    */
   @Query(
       "SELECT rt FROM RecurringTransaction rt WHERE rt.isActive = true "
-          + "AND rt.nextExecutionDate <= :date AND rt.deletedDateTime IS NULL "
+          + "AND rt.nextExecutionDate <= :date AND rt.deletedAt IS NULL "
           + "AND (rt.endDate IS NULL OR rt.endDate >= :date)")
   List<RecurringTransaction> findTransactionsToExecute(@Param("date") LocalDate date);
 

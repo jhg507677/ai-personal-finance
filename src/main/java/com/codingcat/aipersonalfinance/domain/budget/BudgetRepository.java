@@ -57,7 +57,7 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     SELECT BUDGET FROM Budget AS BUDGET
     WHERE BUDGET.isActive = true AND BUDGET.isAlertSent = false
     AND BUDGET.startDate <= :today AND BUDGET.endDate >= :today
-    AND BUDGET.deletedDateTime IS NULL
+    AND BUDGET.deletedAt IS NULL
   """)
   List<Budget> findActiveBudgetsForAlertCheck(@Param("today") LocalDate today);
 }
