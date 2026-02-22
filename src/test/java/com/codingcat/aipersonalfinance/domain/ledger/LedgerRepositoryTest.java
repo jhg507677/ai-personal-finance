@@ -2,7 +2,9 @@ package com.codingcat.aipersonalfinance.domain.ledger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.codingcat.aipersonalfinance.config.TestJpaConfig;
 import com.codingcat.aipersonalfinance.domain.user.User;
+import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -12,24 +14,28 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 /**
  * LedgerRepository 테스트
+ * Spring Boot 3.x 환경
  */
 @DisplayName("LedgerRepository 테스트")
 @DataJpaTest
+@Import(TestJpaConfig.class)
 class LedgerRepositoryTest {
 
   @Autowired private LedgerRepository ledgerRepository;
+  @Autowired private UserRepository userRepository;
 
   private User testUser;
   private User otherUser;
 
   @BeforeEach
   void setUp() {
-    testUser = User.createTestUser();
-    otherUser = User.createTestOtherUser();
+    testUser = userRepository.save(User.createTestUser());
+    otherUser = userRepository.save(User.createTestOtherUser());
   }
 
   @Nested
@@ -102,15 +108,14 @@ class LedgerRepositoryTest {
                   .recordedDate(LocalDate.now())
                   .build());
 
-      Long ledgerId = ledger.getIdx();
       ledger.softDelete();
       ledgerRepository.save(ledger);
 
-      // When: ID로 조회 시도
-      Optional<Ledger> foundLedger = ledgerRepository.findById(ledgerId);
+      // When: 사용자의 모든 거래 조회
+      List<Ledger> userLedgers = ledgerRepository.findByUser(testUser);
 
-      // Then: @SQLRestriction으로 인해 조회되지 않음
-      assertThat(foundLedger).isEmpty();
+      // Then: @SQLRestriction으로 인해 soft delete된 거래는 조회되지 않음
+      assertThat(userLedgers).isEmpty();
     }
   }
 
@@ -120,14 +125,14 @@ class LedgerRepositoryTest {
 
     @Test
     @DisplayName("2-1. 사용자의 활성 거래 내역을 조회할 수 있다")
-    void findByUserAndDeletedAtIsNull() {
+    void findByUser() {
       // Given: testUser의 거래 2건, otherUser의 거래 1건
       ledgerRepository.save(createLedger(testUser, "거래1", new BigDecimal("10000")));
       ledgerRepository.save(createLedger(testUser, "거래2", new BigDecimal("20000")));
       ledgerRepository.save(createLedger(otherUser, "다른거래", new BigDecimal("30000")));
 
       // When: testUser의 거래 조회
-      List<Ledger> ledgers = ledgerRepository.findByUserAndDeletedAtIsNull(testUser);
+      List<Ledger> ledgers = ledgerRepository.findByUser(testUser);
 
       // Then: testUser의 거래 2건만 조회
       assertThat(ledgers).hasSize(2);
@@ -145,7 +150,7 @@ class LedgerRepositoryTest {
       ledgerRepository.save(deletedLedger);
 
       // When: 조회
-      List<Ledger> ledgers = ledgerRepository.findByUserAndDeletedAtIsNull(testUser);
+      List<Ledger> ledgers = ledgerRepository.findByUser(testUser);
 
       // Then: 활성 거래 1건만 조회
       assertThat(ledgers).hasSize(1);
@@ -173,7 +178,7 @@ class LedgerRepositoryTest {
       LocalDate startDate = today.minusDays(2);
       LocalDate endDate = today;
       List<Ledger> ledgers =
-          ledgerRepository.findByUserAndRecordedDateBetweenAndDeletedAtIsNull(
+          ledgerRepository.findByUserAndRecordedDateBetween(
               testUser, startDate, endDate);
 
       // Then: 2건 조회 (오늘, 어제)
@@ -193,7 +198,7 @@ class LedgerRepositoryTest {
 
       // When: 최근 7일 조회
       List<Ledger> ledgers =
-          ledgerRepository.findByUserAndRecordedDateBetweenAndDeletedAtIsNull(
+          ledgerRepository.findByUserAndRecordedDateBetween(
               testUser, today.minusDays(7), today);
 
       // Then: 0건
@@ -219,7 +224,7 @@ class LedgerRepositoryTest {
 
       // When: FOOD 카테고리 조회
       List<Ledger> ledgers =
-          ledgerRepository.findByUserAndCategoryAndDeletedAtIsNull(testUser, Category.FOOD);
+          ledgerRepository.findByUserAndCategory(testUser, Category.FOOD);
 
       // Then: FOOD 카테고리 2건만 조회
       assertThat(ledgers).hasSize(2);
@@ -236,7 +241,7 @@ class LedgerRepositoryTest {
 
       // When: FOOD 카테고리 조회
       List<Ledger> ledgers =
-          ledgerRepository.findByUserAndCategoryAndDeletedAtIsNull(testUser, Category.FOOD);
+          ledgerRepository.findByUserAndCategory(testUser, Category.FOOD);
 
       // Then: 0건
       assertThat(ledgers).isEmpty();
@@ -257,7 +262,7 @@ class LedgerRepositoryTest {
 
       // When: 지출만 조회
       List<Ledger> expenses =
-          ledgerRepository.findByUserAndTypeAndDeletedAtIsNull(testUser, LedgerType.EXPENSE);
+          ledgerRepository.findByUserAndType(testUser, LedgerType.EXPENSE);
 
       // Then: 지출 2건만 조회
       assertThat(expenses).hasSize(2);
@@ -274,7 +279,7 @@ class LedgerRepositoryTest {
 
       // When: 수입만 조회
       List<Ledger> incomes =
-          ledgerRepository.findByUserAndTypeAndDeletedAtIsNull(testUser, LedgerType.INCOME);
+          ledgerRepository.findByUserAndType(testUser, LedgerType.INCOME);
 
       // Then: 수입 2건만 조회
       assertThat(incomes).hasSize(2);
@@ -361,7 +366,7 @@ class LedgerRepositoryTest {
 
       // When: FOOD 카테고리 + 오늘 날짜로 조회
       List<Ledger> ledgers =
-          ledgerRepository.findByUserAndCategoryAndRecordedDateBetweenAndDeletedAtIsNull(
+          ledgerRepository.findByUserAndCategoryAndRecordedDateBetween(
               testUser, Category.FOOD, today, today);
 
       // Then: 1건만 조회 (식비오늘)
@@ -380,7 +385,7 @@ class LedgerRepositoryTest {
 
       // When: 날짜 역순 조회
       List<Ledger> ledgers =
-          ledgerRepository.findByUserAndDeletedAtIsNullOrderByRecordedDateDesc(testUser);
+          ledgerRepository.findByUserOrderByRecordedDateDesc(testUser);
 
       // Then: 최신순 정렬 확인
       assertThat(ledgers).hasSize(3);
@@ -400,7 +405,7 @@ class LedgerRepositoryTest {
       // Given: 데이터 없음
 
       // When: 조회
-      List<Ledger> ledgers = ledgerRepository.findByUserAndDeletedAtIsNull(testUser);
+      List<Ledger> ledgers = ledgerRepository.findByUser(testUser);
 
       // Then: 빈 리스트 반환
       assertThat(ledgers).isEmpty();

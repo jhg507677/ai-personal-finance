@@ -13,12 +13,13 @@ public class UserPrincipal implements UserDetails {
   private final String id;
   private final String password;
   private final String auth;
-  private AuthDto authDto;
+  private final AuthDto authDto;
 
   public UserPrincipal(String id, String password, String auth) {
     this.id = id;
     this.password = password;
     this.auth = auth;
+    this.authDto = null; // TODO: Phase 2 이후 User 엔티티로부터 생성하도록 수정
   }
 
   // 사용자가 가지고 있는 권한을 반환

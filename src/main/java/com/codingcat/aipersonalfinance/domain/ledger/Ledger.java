@@ -85,4 +85,47 @@ public class Ledger extends BaseEntity {
   @JoinColumn(name = "recurring_transaction_idx")
   @Schema(description = "원본 정기 거래 (자동 생성된 경우)")
   private RecurringTransaction recurringTransaction;
+
+  /**
+   * 거래 내역을 수정합니다.
+   * null이 아닌 값만 업데이트합니다.
+   *
+   * @param type 거래 유형
+   * @param amount 거래 금액
+   * @param desc 거래 설명
+   * @param place 거래 장소
+   * @param category 카테고리
+   * @param paymentMethod 결제 수단
+   * @param recordedDate 거래 날짜
+   */
+  public void update(
+      LedgerType type,
+      BigDecimal amount,
+      String desc,
+      String place,
+      Category category,
+      PaymentMethod paymentMethod,
+      LocalDate recordedDate) {
+    if (type != null) {
+      this.type = type;
+    }
+    if (amount != null) {
+      this.amount = amount;
+    }
+    if (desc != null) {
+      this.desc = desc;
+    }
+    if (place != null) {
+      this.place = place;
+    }
+    if (category != null) {
+      this.category = category;
+    }
+    if (paymentMethod != null) {
+      this.paymentMethod = paymentMethod;
+    }
+    if (recordedDate != null) {
+      this.recordedDate = recordedDate;
+    }
+  }
 }

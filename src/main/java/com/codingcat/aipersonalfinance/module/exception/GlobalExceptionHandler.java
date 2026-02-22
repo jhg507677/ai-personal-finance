@@ -1,5 +1,6 @@
 package com.codingcat.aipersonalfinance.module.exception;
 
+import com.codingcat.aipersonalfinance.exception.BusinessException;
 import com.codingcat.aipersonalfinance.module.model.ApiResponseVo;
 import io.swagger.v3.oas.annotations.Hidden;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +36,17 @@ public class GlobalExceptionHandler {
       .message(custom.getMessage())
       .build();
     return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(BusinessException.class)
+  public ResponseEntity<ApiResponseVo<?>> handleBusinessException(BusinessException e) {
+    e.printStackTrace(); // 로깅
+    ApiResponseVo<?> response = ApiResponseVo.builder()
+      .status(e.getErrorCode().getStatus())
+      .code(e.getErrorCode().getCode())
+      .message(e.getMessage())
+      .build();
+    return new ResponseEntity<>(response, jsonHeaders(), e.getErrorCode().getStatus());
   }
 
   /*** @Valid 검증 실패 시 처리*/

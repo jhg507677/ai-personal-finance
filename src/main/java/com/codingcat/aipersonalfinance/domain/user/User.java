@@ -60,7 +60,7 @@ public class User extends BaseEntity {
 
   public static User createTestOtherUser() {
     User user = new User();
-    user.userId = "testId";
+    user.userId = "otherTestId";
     user.email = "other@test.com";
     user.name = "다른유저";
     user.password = "password";

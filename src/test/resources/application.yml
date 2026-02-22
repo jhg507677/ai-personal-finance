@@ -1,0 +1,24 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    show-sql: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  main:
+    allow-bean-definition-overriding: true
+
+# JWT 설정 (테스트용)
+jwt:
+  issuer: ai-personal-finance-test
+  admin-secret: test-admin-secret-key-for-testing-must-be-at-least-32-characters-long
+  user-secret: test-user-secret-key-for-testing-must-be-at-least-32-characters-long
+  access-expire-time: 3600000
+  refresh-expire-time: 86400000

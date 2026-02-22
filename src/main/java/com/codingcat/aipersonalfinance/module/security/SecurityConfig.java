@@ -1,6 +1,6 @@
 package com.codingcat.aipersonalfinance.module.security;
 
-import static org.springframework.boot.security.autoconfigure.web.servlet.PathRequest.toH2Console;
+import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 
 import com.codingcat.aipersonalfinance.module.config.oauth.Oauth2SuccessHandler;
 import com.codingcat.aipersonalfinance.module.config.oauth.Oauth2UserCustomService;
@@ -11,7 +11,7 @@ import com.codingcat.aipersonalfinance.module.security.handler.JwtAuthentication
 import com.codingcat.aipersonalfinance.module.security.token.RefreshTokenRepository;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
