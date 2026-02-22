@@ -141,8 +141,115 @@ Authorization: Bearer {{accessToken}}
 GET {{host}}/api/v1/client/ledgers
 
 ###############################################
+### Budget API 테스트 (인증 필요)
+###############################################
+
+### 16. 예산 생성 (2024년 2월 식비 예산)
+POST {{host}}/api/v1/client/budgets
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "2024년 2월 식비 예산",
+  "budgetPeriod": "MONTHLY",
+  "startDate": "2024-02-01",
+  "endDate": "2024-02-29",
+  "amount": 500000,
+  "category": "FOOD",
+  "alertThreshold": 80.00
+}
+
+> {%
+client.global.set("budgetId", response.body.content.budgetIdx);
+%}
+
+### 17. 예산 생성 (2024년 2월 전체 예산)
+POST {{host}}/api/v1/client/budgets
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "2024년 2월 전체 예산",
+  "budgetPeriod": "MONTHLY",
+  "startDate": "2024-02-01",
+  "endDate": "2024-02-29",
+  "amount": 2000000
+}
+
+### 18. 예산 상세 조회
+GET {{host}}/api/v1/client/budgets/{{budgetId}}
+Authorization: Bearer {{accessToken}}
+
+### 19. 예산 사용 현황 조회 (핵심 기능!)
+GET {{host}}/api/v1/client/budgets/{{budgetId}}/usage
+Authorization: Bearer {{accessToken}}
+
+### 20. 예산 목록 조회
+GET {{host}}/api/v1/client/budgets
+Authorization: Bearer {{accessToken}}
+
+### 21. 예산 수정
+PUT {{host}}/api/v1/client/budgets/{{budgetId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "amount": 600000,
+  "alertThreshold": 70.00
+}
+
+### 22. 예산 삭제 (Soft Delete)
+DELETE {{host}}/api/v1/client/budgets/{{budgetId}}
+Authorization: Bearer {{accessToken}}
+
+### 23. 삭제된 예산 조회 시도 (에러 예상)
+GET {{host}}/api/v1/client/budgets/{{budgetId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### Budget 유효성 검증 테스트
+###############################################
+
+### 24. 필수 필드 누락 (400 에러)
+POST {{host}}/api/v1/client/budgets
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "예산"
+}
+
+### 25. 음수 금액 (400 에러)
+POST {{host}}/api/v1/client/budgets
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "테스트 예산",
+  "budgetPeriod": "MONTHLY",
+  "startDate": "2024-02-01",
+  "endDate": "2024-02-29",
+  "amount": -100000
+}
+
+### 26. 기간 중복 예산 생성 (에러 예상)
+POST {{host}}/api/v1/client/budgets
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "중복 예산",
+  "budgetPeriod": "MONTHLY",
+  "startDate": "2024-02-01",
+  "endDate": "2024-02-29",
+  "amount": 500000,
+  "category": "FOOD"
+}
+
+###############################################
 ### 참고: 사용 가능한 Enum 값
 ###############################################
 # LedgerType: INCOME, EXPENSE
-# Category: FOOD, TRANSPORT, SHOPPING, ENTERTAINMENT, HEALTH, EDUCATION, SUBSCRIPTION, ETC
+# Category: FOOD, TRANSPORT, CAFE, SHOPPING, LIVING, COMMUNICATION, MEDICAL, EDUCATION, SUBSCRIPTION, ETC
 # PaymentMethod: CASH, CARD, TRANSFER, ETC
+# BudgetPeriod: WEEKLY, MONTHLY, YEARLY

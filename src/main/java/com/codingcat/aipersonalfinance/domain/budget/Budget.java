@@ -134,4 +134,43 @@ public class Budget extends BaseEntity {
   public void resetAlert() {
     this.isAlertSent = false;
   }
+
+  /**
+   * 예산을 수정합니다.
+   * null이 아닌 값만 업데이트합니다.
+   */
+  public void update(
+      String name,
+      BudgetPeriod budgetPeriod,
+      LocalDate startDate,
+      LocalDate endDate,
+      BigDecimal amount,
+      Category category,
+      BigDecimal alertThreshold,
+      Boolean isActive) {
+    if (name != null) {
+      this.name = name;
+    }
+    if (budgetPeriod != null) {
+      this.budgetPeriod = budgetPeriod;
+    }
+    if (startDate != null) {
+      this.startDate = startDate;
+    }
+    if (endDate != null) {
+      this.endDate = endDate;
+    }
+    if (amount != null) {
+      this.amount = amount;
+    }
+    if (category != null) {
+      this.category = category;
+    }
+    if (alertThreshold != null) {
+      this.alertThreshold = alertThreshold;
+    }
+    if (isActive != null) {
+      this.isActive = isActive;
+    }
+  }
 }
