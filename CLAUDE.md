@@ -124,20 +124,18 @@ public Entity toEntity(User user) {
     }
     ```
 
--   Entity의 `update()` 메서드: 필수는 직접 할당, 선택은 null 체크
+-   Entity의 `update()` 메서드: 모든 필드 직접 할당
+    - 필수 필드: 항상 할당
+    - 선택 필드: null이 오면 null로 설정 (값 삭제 의미)
     ``` java
     public void update(BudgetUpdateRequest request) {
       this.name = request.getName();
       this.amount = request.getAmount();
       this.isActive = request.getIsActive();
 
-      // 선택 필드는 null이 아닐 때만 업데이트
-      if (request.getCategory() != null) {
-        this.category = request.getCategory();
-      }
-      if (request.getAlertThreshold() != null) {
-        this.alertThreshold = request.getAlertThreshold();
-      }
+      // 선택 필드도 직접 할당 (null이면 값 삭제)
+      this.category = request.getCategory();
+      this.alertThreshold = request.getAlertThreshold();
     }
     ```
 

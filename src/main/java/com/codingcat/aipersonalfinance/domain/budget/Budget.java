@@ -145,14 +145,8 @@ public class Budget extends BaseEntity {
     this.startDate = request.getStartDate();
     this.endDate = request.getEndDate();
     this.amount = request.getAmount();
+    this.category = request.getCategory();
+    this.alertThreshold = request.getAlertThreshold();
     this.isActive = request.getIsActive();
-
-    // 선택 필드는 null이 아닐 때만 업데이트
-    if (request.getCategory() != null) {
-      this.category = request.getCategory();
-    }
-    if (request.getAlertThreshold() != null) {
-      this.alertThreshold = request.getAlertThreshold();
-    }
   }
 }
