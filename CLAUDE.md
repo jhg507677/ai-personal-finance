@@ -95,6 +95,77 @@ public Entity toEntity(User user) {
 -   커스텀 검증은 `jakarta.validation` 어노테이션 사용
   -   @NotNull, @NotBlank, @Min, @Max 등
 
+## 11-1. Update Request DTO 규칙
+
+-   **PUT 방식**: 전체 리소스 교체 (모든 필드 필수)
+-   모든 필드에 `@NotNull` 추가
+-   필드별 추가 검증 (`@Positive`, `@Size` 등)
+    예:
+    ``` java
+    @Getter
+    public class BudgetUpdateRequest {
+      @NotNull(message = "예산 이름은 필수입니다")
+      @Size(min = 1, max = 100)
+      private String name;
+
+      @NotNull(message = "예산 금액은 필수입니다")
+      @Positive(message = "예산 금액은 0보다 커야 합니다")
+      private BigDecimal amount;
+
+      @NotNull(message = "활성 상태는 필수입니다")
+      private Boolean isActive;
+      // ... 모든 필드에 @NotNull
+    }
+    ```
+
+-   Entity의 `update()` 메서드는 null 체크 없이 간단하게
+    ``` java
+    public void update(BudgetUpdateRequest request) {
+      this.name = request.getName();
+      this.amount = request.getAmount();
+      this.isActive = request.getIsActive();
+      // ... 모든 필드 직접 할당
+    }
+    ```
+
+------------------------------------------------------------------------
+
+## 11-2. API Response 헬퍼 메서드
+
+-   성공 응답은 `sendApiOK()` 헬퍼 메서드 사용
+-   중복 코드 제거 (5줄 → 1줄)
+-   static import 사용으로 코드 간소화
+    예:
+    ``` java
+    // Before: 5줄 (중복)
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK,
+        "sm.common.success.default",
+        "success",
+        BudgetResponse.from(budget),
+        null);
+
+    // After: 1줄 (간결)
+    return sendApiOK(BudgetResponse.from(budget));
+    ```
+
+-   ApiResponseUtil.java 에 정의:
+    ``` java
+    public static <T> ResponseEntity<?> sendApiOK(T data) {
+      return sendApiResponse(
+          HttpStatus.OK,
+          "sm.common.success.default",
+          "success",
+          data,
+          null);
+    }
+    ```
+
+-   Service에서 static import:
+    ``` java
+    import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
+    ```
+
 ------------------------------------------------------------------------
 
 ## 12. Service 레이어 규칙
@@ -117,6 +188,8 @@ public class SomeService {
 ```
 
 ## 14. 전체 플로우 예시
+
+### 14-1. Create (POST)
 ``` java
 // Controller
 @PostMapping("/api/v1/client/resources")
@@ -125,6 +198,26 @@ public ResponseEntity<?> create(
   @Valid @RequestBody CreateRequest request
 ) {
   return service.create(userPrincipal.getAuthDto(), request);
+}
+
+// Request DTO
+@Getter
+public class CreateRequest {
+  @NotNull(message = "이름은 필수입니다")
+  @Size(min = 1, max = 100)
+  private String name;
+
+  @NotNull(message = "금액은 필수입니다")
+  @Positive
+  private BigDecimal amount;
+
+  public Entity toEntity(User user) {
+    return Entity.builder()
+        .user(user)
+        .name(this.name)
+        .amount(this.amount)
+        .build();
+  }
 }
 
 // Service
@@ -144,13 +237,49 @@ public class SomeService {
     Entity entity = request.toEntity(user);
     Entity saved = repository.save(entity);
 
-    return ApiResponseUtil.sendApiResponse(
-      HttpStatus.OK,
-      "sm.common.success.default",
-      "success",
-      EntityResponse.from(saved),
-      null
-    );
+    return sendApiOK(EntityResponse.from(saved));
   }
+}
+```
+
+### 14-2. Update (PUT)
+``` java
+// Controller
+@PutMapping("/api/v1/client/resources/{id}")
+public ResponseEntity<?> update(
+  @AuthenticationPrincipal UserPrincipal userPrincipal,
+  @PathVariable Long id,
+  @Valid @RequestBody UpdateRequest request
+) {
+  return service.update(userPrincipal.getAuthDto(), id, request);
+}
+
+// Request DTO (모든 필드 필수)
+@Getter
+public class UpdateRequest {
+  @NotNull(message = "이름은 필수입니다")
+  @Size(min = 1, max = 100)
+  private String name;
+
+  @NotNull(message = "금액은 필수입니다")
+  @Positive
+  private BigDecimal amount;
+  // ... 모든 필드에 @NotNull
+}
+
+// Entity
+public void update(UpdateRequest request) {
+  this.name = request.getName();
+  this.amount = request.getAmount();
+  // ... 모든 필드 직접 할당
+}
+
+// Service
+@Transactional
+public ResponseEntity<?> update(AuthDto authDto, Long id, UpdateRequest request) {
+  Entity entity = findEntityById(id);
+  validateOwnership(authDto.getUserId(), entity);
+  entity.update(request);
+  return sendApiOK(EntityResponse.from(entity));
 }
 ```
