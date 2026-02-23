@@ -19,7 +19,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
   /**
    * 사용자의 활성화된 예산 목록을 조회합니다.
    * @SQLRestriction에 의해 삭제된 항목은 자동 제외됩니다.
-   *
    * @param user 사용자
    * @return 활성화된 예산 목록
    */

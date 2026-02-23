@@ -107,7 +107,7 @@ class BudgetRepositoryTest {
                   .category(Category.FOOD)
                   .build());
 
-      budget.softDelete();
+      budget.sDelete();
       budgetRepository.save(budget);
 
       // When: 사용자의 모든 예산 조회

@@ -326,7 +326,7 @@ class BudgetServiceTest {
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When
-      budgetService.deleteBudget(userId, budgetId);
+      budgetService.sDeleteBudget(userId, budgetId);
 
       // Then
       verify(budgetRepository).findById(budgetId);
@@ -343,7 +343,7 @@ class BudgetServiceTest {
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.deleteBudget(otherUserId, budgetId))
+      assertThatThrownBy(() -> budgetService.sDeleteBudget(otherUserId, budgetId))
           .isInstanceOf(BusinessException.class);
     }
   }

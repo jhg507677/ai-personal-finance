@@ -26,6 +26,7 @@ Spring Boot 기반 API 서버
 - 공통 코드는 module에 위치
 - 과도한 계층 분리 지양 (모놀리식 기준 단순 구조 유지)
 - 테스트코드는 반드시 필수
+- delete 메서드는 sDelete(soft 방식), hDelete(hard 방식)으로 네이밍 구분
 
 ## 4. API Conventions
 - RESTful 설계 원칙 준수
@@ -60,9 +61,9 @@ Spring Boot 기반 API 서버
 - 모든 테이블 PK는 autoIncrement 사용
 - PK 컬럼명은 `{table}_idx` 형식으로 통일
 예: - user_idx - budget_idx - memo_idx
-- 날짜 타입 필드: `~Date`
-- 날짜 + 시간 타입 필드: `~DateTime`
-- 예: createdDate, deletedDateTime
+- 날짜 타입 필드: `Date`
+- 날짜 + 시간 타입 필드: `~At`
+- 예: startDate, endDate (날짜 필드), createdAt, deletedAt (날짜+시간 필드)
 - 모든 Entity는 `BaseEntity` 상속
 
 ## 9. 인증 처리
@@ -96,48 +97,11 @@ public Entity toEntity(User user) {
   -   @NotNull, @NotBlank, @Min, @Max 등
 
 ## 11-1. Update Request DTO 규칙
-
--   **Entity와 비교하여 필수 필드만 `@NotNull` 추가**
+-   **Entity 및 create Request와 비교하여 필수 필드에 @Valid 조건 추가
 -   필드별 추가 검증 (`@Positive`, `@Size` 등)
--   선택 필드는 null 체크 처리
-    예:
-    ``` java
-    @Getter
-    public class BudgetUpdateRequest {
-      // 필수 필드 (Entity: nullable = false)
-      @NotNull(message = "예산 이름은 필수입니다")
-      @Size(min = 1, max = 100)
-      private String name;
-
-      @NotNull(message = "예산 금액은 필수입니다")
-      @Positive
-      private BigDecimal amount;
-
-      @NotNull(message = "활성 상태는 필수입니다")
-      private Boolean isActive;
-
-      // 선택 필드 (null 가능)
-      private Category category;
-
-      @Positive
-      private BigDecimal alertThreshold;
-    }
-    ```
-
 -   Entity의 `update()` 메서드: 모든 필드 직접 할당
     - 필수 필드: 항상 할당
     - 선택 필드: null이 오면 null로 설정 (값 삭제 의미)
-    ``` java
-    public void update(BudgetUpdateRequest request) {
-      this.name = request.getName();
-      this.amount = request.getAmount();
-      this.isActive = request.getIsActive();
-
-      // 선택 필드도 직접 할당 (null이면 값 삭제)
-      this.category = request.getCategory();
-      this.alertThreshold = request.getAlertThreshold();
-    }
-    ```
 
 ------------------------------------------------------------------------
 

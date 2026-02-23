@@ -71,7 +71,7 @@ public class LedgerService {
   public ResponseEntity<?> deleteLedger(AuthDto authDto, Long ledgerId) {
     Ledger ledger = findLedgerById(ledgerId);
     validateLedgerOwnership(authDto.getUserId(), ledger);
-    ledger.softDelete();
+    ledger.sDelete();
     return ApiResponseUtil.sendApiResponse(
         HttpStatus.OK, "sm.common.success.default", "success", null, null);
   }

@@ -109,7 +109,7 @@ class LedgerRepositoryTest {
                   .recordedDate(LocalDate.now())
                   .build());
 
-      ledger.softDelete();
+      ledger.sDelete();
       ledgerRepository.save(ledger);
 
       // When: 사용자의 모든 거래 조회
@@ -147,7 +147,7 @@ class LedgerRepositoryTest {
       ledgerRepository.save(createLedger(testUser, "활성거래", new BigDecimal("10000")));
       Ledger deletedLedger =
           ledgerRepository.save(createLedger(testUser, "삭제된거래", new BigDecimal("20000")));
-      deletedLedger.softDelete();
+      deletedLedger.sDelete();
       ledgerRepository.save(deletedLedger);
 
       // When: 조회

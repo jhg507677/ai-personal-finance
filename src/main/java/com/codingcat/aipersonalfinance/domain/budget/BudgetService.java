@@ -117,15 +117,16 @@ public class BudgetService {
     return sendApiOK(BudgetResponse.from(budget));
   }
 
+  // 예산 삭제
   @Transactional
-  public ResponseEntity<?> deleteBudget(AuthDto authDto, Long budgetId) {
+  public ResponseEntity<?> sDeleteBudget(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
     validateBudgetOwnership(authDto.getUserId(), budget);
-    budget.softDelete();
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", null, null);
+    budget.sDelete();
+    return sendApiOK(null);
   }
 
+  // 예산 목록 조회
   public ResponseEntity<?> getBudgetList(AuthDto authDto) {
     User user = findUserByUserId(authDto.getUserId());
     List<Budget> budgets = budgetRepository.findByUserAndIsActiveTrue(user);

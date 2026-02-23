@@ -19,6 +19,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +36,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLRestriction("deleted_at IS NULL")
+@SQLRestriction("deleted_dt IS NULL")
 public class Ledger extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -74,7 +75,8 @@ public class Ledger extends BaseEntity {
 
   @PastOrPresent
   @Column(name = "recorded_date", nullable = false)
-  private LocalDate recordedDate;
+  private LocalDate recordOn;
+  private LocalDateTime deletedAt;
 
   @Schema(description = "정기 거래로부터 자동 생성되었는지 여부")
   @Column(name = "is_auto_generated", nullable = false)

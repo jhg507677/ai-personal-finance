@@ -56,7 +56,8 @@ public class BudgetController {
   public ResponseEntity<?> updateBudget(
       @AuthenticationPrincipal UserPrincipal userPrincipal,
       @Parameter(description = "예산 ID", required = true) @PathVariable Long budgetId,
-      @Valid @RequestBody BudgetUpdateRequest request) {
+      @Valid @RequestBody BudgetUpdateRequest request
+  ) {
     return budgetService.updateBudget(userPrincipal.getAuthDto(), budgetId, request);
   }
 
@@ -64,8 +65,9 @@ public class BudgetController {
   @Operation(summary = "예산 삭제", description = "예산을 삭제합니다 (Soft Delete)")
   public ResponseEntity<?> deleteBudget(
       @AuthenticationPrincipal UserPrincipal userPrincipal,
-      @Parameter(description = "예산 ID", required = true) @PathVariable Long budgetId) {
-    return budgetService.deleteBudget(userPrincipal.getAuthDto(), budgetId);
+      @Parameter(description = "예산 ID", required = true) @PathVariable Long budgetId
+  ) {
+    return budgetService.sDeleteBudget(userPrincipal.getAuthDto(), budgetId);
   }
 
   @GetMapping("/api/v1/client/budgets")

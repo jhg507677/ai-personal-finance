@@ -14,21 +14,21 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
   @CreatedDate
-  @Column(name = "created_date_time", nullable = false, updatable = false)
-  private LocalDateTime createdDateTime;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
   @LastModifiedDate
-  @Column(name = "modified_date_time")
-  private LocalDateTime modifiedDateTime;
+  @Column(name = "modified_at")
+  private LocalDateTime modifiedAt;
 
   @Column(name = "deleted_at")
-  private LocalDateTime deletedDateTime;
+  private LocalDateTime deletedAt;
 
   /**
    * 엔티티를 논리적으로 삭제합니다.
    */
-  public void softDelete() {
-    this.deletedDateTime = LocalDateTime.now();
+  public void sDelete() {
+    this.deletedAt = LocalDateTime.now();
   }
 
   /**
@@ -37,13 +37,13 @@ public abstract class BaseEntity {
    * @return 삭제된 경우 true, 아니면 false
    */
   public boolean isDeleted() {
-    return this.deletedDateTime != null;
+    return this.deletedAt != null;
   }
 
   /**
    * 논리적으로 삭제된 엔티티를 복구합니다.
    */
   public void restore() {
-    this.deletedDateTime = null;
+    this.deletedAt = null;
   }
 }
