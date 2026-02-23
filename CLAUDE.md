@@ -27,6 +27,7 @@ Spring Boot 기반 API 서버
 - 과도한 계층 분리 지양 (모놀리식 기준 단순 구조 유지)
 - 테스트코드는 반드시 필수
 - delete 메서드는 sDelete(soft 방식), hDelete(hard 방식)으로 네이밍 구분
+- service.java 파일의 메서드들에 한줄 주석 달아줘 ex) 예산 목록 조회
 
 ## 4. API Conventions
 - RESTful 설계 원칙 준수
@@ -106,41 +107,8 @@ public Entity toEntity(User user) {
 ------------------------------------------------------------------------
 
 ## 11-2. API Response 헬퍼 메서드
-
--   성공 응답은 `sendApiOK()` 헬퍼 메서드 사용
--   중복 코드 제거 (5줄 → 1줄)
--   static import 사용으로 코드 간소화
-    예:
-    ``` java
-    // Before: 5줄 (중복)
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        BudgetResponse.from(budget),
-        null);
-
-    // After: 1줄 (간결)
-    return sendApiOK(BudgetResponse.from(budget));
-    ```
-
--   ApiResponseUtil.java 에 정의:
-    ``` java
-    public static <T> ResponseEntity<?> sendApiOK(T data) {
-      return sendApiResponse(
-          HttpStatus.OK,
-          "sm.common.success.default",
-          "success",
-          data,
-          null);
-    }
-    ```
-
--   Service에서 static import:
-    ``` java
-    import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
-    ```
-
+-   성공 응답은 특정한 메시지가 필요한 경우가 아니라면 `sendApiOK()` 메서드 사용
+  ex) return sendApiOK(BudgetResponse.from(budget));
 ------------------------------------------------------------------------
 
 ## 12. Service 레이어 규칙

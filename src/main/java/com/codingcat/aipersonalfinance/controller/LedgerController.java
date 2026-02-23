@@ -2,6 +2,7 @@ package com.codingcat.aipersonalfinance.controller;
 
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerCreateRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchCondition;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerUpdateRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.Category;
 import com.codingcat.aipersonalfinance.domain.ledger.LedgerType;
@@ -29,9 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * 거래 내역(Ledger) 컨트롤러
- */
+/***거래 내역(Ledger) 컨트롤러*/
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -83,32 +82,15 @@ public class LedgerController {
     return ledgerService.deleteLedger(userPrincipal.getAuthDto(), ledgerId);
   }
 
-  /**
-   * 거래 내역 목록 조회 (페이징, 필터링, 정렬)
-   */
+  // page=1&size=10&sort=createdAt,desc
   @GetMapping("/api/v1/client/ledgers")
   @Operation(summary = "거래 내역 목록 조회", description = "거래 내역 목록을 조회합니다 (페이징, 필터링)")
   public ResponseEntity<?> getLedgerList(
-      @AuthenticationPrincipal UserPrincipal userPrincipal,
-      @Parameter(description = "거래 유형 (INCOME/EXPENSE)") @RequestParam(required = false)
-          LedgerType type,
-      @Parameter(description = "카테고리") @RequestParam(required = false) Category category,
-      @Parameter(description = "시작 날짜 (yyyy-MM-dd)") @RequestParam(required = false)
-          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-          LocalDate startDate,
-      @Parameter(description = "종료 날짜 (yyyy-MM-dd)") @RequestParam(required = false)
-          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-          LocalDate endDate,
-      @PageableDefault(size = 20, sort = "recordedDate", direction = Sort.Direction.DESC)
-          Pageable pageable) {
-    LedgerSearchCondition condition =
-        LedgerSearchCondition.builder()
-            .type(type)
-            .category(category)
-            .startDate(startDate)
-            .endDate(endDate)
-            .build();
-
-    return ledgerService.getLedgerList(userPrincipal.getAuthDto(), condition, pageable);
+    @AuthenticationPrincipal UserPrincipal userPrincipal,
+    @Valid LedgerSearchRequest request,
+    @PageableDefault(sort = "recordedDate", direction = Sort.Direction.DESC)
+    Pageable pageable
+  ) {
+    return ledgerService.getLedgerList(userPrincipal.getAuthDto(), request, pageable);
   }
 }

@@ -131,14 +131,13 @@ public class BudgetService {
     User user = findUserByUserId(authDto.getUserId());
     List<Budget> budgets = budgetRepository.findByUserAndIsActiveTrue(user);
     List<BudgetResponse> responses =
-        budgets.stream().map(BudgetResponse::from).collect(Collectors.toList());
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", responses, null);
+        budgets.stream()
+          .map(BudgetResponse::from)
+          .collect(Collectors.toList());
+    return sendApiOK(responses);
   }
 
-  /**
-   * 기간 중복 검증
-   */
+  // 기간 중복 검증
   private void validateDuplicatePeriod(User user, BudgetCreateRequest request) {
     Optional<Budget> existingBudget =
         budgetRepository.findByUserAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(

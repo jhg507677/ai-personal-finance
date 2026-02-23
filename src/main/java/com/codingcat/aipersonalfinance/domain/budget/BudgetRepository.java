@@ -18,7 +18,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
   /**
    * 사용자의 활성화된 예산 목록을 조회합니다.
-   * @SQLRestriction에 의해 삭제된 항목은 자동 제외됩니다.
    * @param user 사용자
    * @return 활성화된 예산 목록
    */
@@ -26,8 +25,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
   /**
    * 특정 날짜에 해당하는 사용자의 예산을 조회합니다.
-   * @SQLRestriction에 의해 삭제된 항목은 자동 제외됩니다.
-   *
    * @param user 사용자
    * @param date 조회할 날짜
    * @param sameDate 조회할 날짜 (endDate 비교용)
@@ -38,8 +35,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
   /**
    * 특정 카테고리에 대한 특정 기간의 예산을 조회합니다.
-   * @SQLRestriction에 의해 삭제된 항목은 자동 제외됩니다.
-   *
    * @param user 사용자
    * @param category 카테고리
    * @param startDate 시작일
@@ -52,8 +47,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
   /**
    * 알림 체크가 필요한 활성화된 예산 목록을 조회합니다.
-   * @SQLRestriction에 의해 삭제된 항목은 자동 제외됩니다.
-   *
    * @param today 오늘 날짜
    * @return 알림 체크가 필요한 예산 목록
    */

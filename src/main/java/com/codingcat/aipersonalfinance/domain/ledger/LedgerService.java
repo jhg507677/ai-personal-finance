@@ -3,13 +3,17 @@ package com.codingcat.aipersonalfinance.domain.ledger;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerCreateRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerResponse;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchCondition;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerUpdateRequest;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
 
 import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
+
+import com.querydsl.core.BooleanBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -28,26 +32,26 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LedgerService {
-
   private final LedgerRepository ledgerRepository;
   private final UserRepository userRepository;
 
+  // 거래 내역 생성
   @Transactional
   public ResponseEntity<?> createLedger(AuthDto authDto, LedgerCreateRequest request) {
     User user = findUserByUserId(authDto.getUserId());
     Ledger ledger = request.toEntity(user);
     Ledger savedLedger = ledgerRepository.save(ledger);
-    return sendApiOK(
-        LedgerResponse.from(savedLedger));
+    return sendApiOK(LedgerResponse.from(savedLedger));
   }
 
+  // 거래 내역 조회
   public ResponseEntity<?> getLedger(AuthDto authDto, Long ledgerId) {
     Ledger ledger = findLedgerById(ledgerId);
     validateLedgerOwnership(authDto.getUserId(), ledger);
-    return sendApiOK(
-        LedgerResponse.from(ledger));
+    return sendApiOK(LedgerResponse.from(ledger));
   }
 
+  // 거래 내역 수정
   @Transactional
   public ResponseEntity<?> updateLedger(
       AuthDto authDto, Long ledgerId, LedgerUpdateRequest request) {
@@ -63,8 +67,7 @@ public class LedgerService {
         request.getPaymentMethod(),
         request.getRecordedDate());
 
-    return sendApiOK(
-        LedgerResponse.from(ledger));
+    return sendApiOK(LedgerResponse.from(ledger));
   }
 
   @Transactional
@@ -77,7 +80,7 @@ public class LedgerService {
   }
 
   public ResponseEntity<?> getLedgerList(
-      AuthDto authDto, LedgerSearchCondition condition, Pageable pageable) {
+      AuthDto authDto, LedgerSearchRequest condition, Pageable pageable) {
     User user = findUserByUserId(authDto.getUserId());
 
     List<Ledger> ledgers = findLedgersByCondition(user, condition);
@@ -98,30 +101,30 @@ public class LedgerService {
   /**
    * 검색 조건에 따라 거래 내역을 조회합니다.
    */
-  private List<Ledger> findLedgersByCondition(User user, LedgerSearchCondition condition) {
-    if (condition == null) {
-      return ledgerRepository.findByUserOrderByRecordedDateDesc(user);
+  private List<Ledger> findLedgersByCondition(User user, LedgerSearchRequest condition) {
+    QLedger ledger = QLedger.ledger;
+    BooleanBuilder builder = new BooleanBuilder();
+
+    builder.and(ledger.user.eq(user));
+
+    if (condition.getType() != null) builder.and(ledger.type.eq(condition.getType()));
+    if (condition.getCategory() != null) builder.and(ledger.category.eq(condition.getCategory()));
+
+    if (condition.getStartDate() != null &&
+      condition.getEndDate() != null) {
+      builder.and(
+        ledger.recordedDate.between(
+          condition.getStartDate(),
+          condition.getEndDate()
+        )
+      );
     }
 
-    // 조건이 있는 경우 필터링
-    if (condition.getType() != null && condition.getCategory() == null) {
-      return ledgerRepository.findByUserAndType(user, condition.getType());
-    }
-
-    if (condition.getCategory() != null && condition.getType() == null) {
-      return ledgerRepository.findByUserAndCategory(user, condition.getCategory());
-    }
-
-    if (condition.getStartDate() != null && condition.getEndDate() != null) {
-      if (condition.getCategory() != null) {
-        return ledgerRepository.findByUserAndCategoryAndRecordedDateBetween(
-            user, condition.getCategory(), condition.getStartDate(), condition.getEndDate());
-      }
-      return ledgerRepository.findByUserAndRecordedDateBetween(
-          user, condition.getStartDate(), condition.getEndDate());
-    }
-
-    return ledgerRepository.findByUserOrderByRecordedDateDesc(user);
+    return queryFactory
+      .selectFrom(ledger)
+      .where(builder)
+      .orderBy(ledger.recordedDate.desc())
+      .fetch();
   }
 
   /**

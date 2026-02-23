@@ -73,6 +73,7 @@ public class Ledger extends BaseEntity {
   @Column(name = "payment_method", nullable = false, length = 50)
   private PaymentMethod paymentMethod;
 
+  @Schema(description = "실제 거래 날짜")
   @PastOrPresent
   @Column(name = "recorded_date", nullable = false)
   private LocalDate recordedDate;

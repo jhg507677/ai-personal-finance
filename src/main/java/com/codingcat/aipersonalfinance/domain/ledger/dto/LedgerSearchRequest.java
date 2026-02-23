@@ -7,18 +7,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
-/**
- * 거래 내역 검색 조건 DTO
- */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LedgerSearchCondition {
-
+public class LedgerSearchRequest {
   private LedgerType type;
   private Category category;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate startDate;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate endDate;
 }
