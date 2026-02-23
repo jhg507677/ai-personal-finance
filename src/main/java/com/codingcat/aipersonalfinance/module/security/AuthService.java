@@ -1,29 +1,22 @@
 package com.codingcat.aipersonalfinance.module.security;
 
-import static com.codingcat.aipersonalfinance.module.model.ApiResponseUtil.sendApiResponseFailServer;
-
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.CookieUtil;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
 import com.codingcat.aipersonalfinance.module.model.ApiResponseUtil;
-import com.codingcat.aipersonalfinance.module.model.ApiResponseVo;
 import com.codingcat.aipersonalfinance.module.security.token.RefreshToken;
 import com.codingcat.aipersonalfinance.module.security.token.RefreshTokenRepository;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider.JWT_STATUS;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider.TokenResult;
 import com.codingcat.aipersonalfinance.module.security.token.TokenType;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +41,7 @@ public class AuthService {
   }
 
   // 토큰 생성하기
-  public ApiResponseVo<?> generateLoginToken(
+  public ApiResponseUtil<?> generateLoginToken(
     HttpServletResponse response,
     AuthDto auth
   ){
@@ -71,9 +64,9 @@ public class AuthService {
       loginResponse.setUserIdx(auth.getUserIdx());
 
       CookieUtil.addSecureCookie(response, tokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken.token(), Duration.ofDays(7));
-      return ApiResponseVo.ok(loginResponse);
+      return ApiResponseUtil.ok(loginResponse);
     }catch (Exception e){
-      return ApiResponseVo.failServer(e);
+      return ApiResponseUtil.failServer(e);
     }
   }
 

@@ -21,10 +21,10 @@
 - 예시:
 ```java
 public Entity toEntity(User user) {
-  return Entity.builder()
-    .user(user)
-    .field1(this.field1)
-    .build();
+    return Entity.builder()
+        .user(user)
+        .field1(this.field1)
+        .build();
 }
 ```
 
@@ -77,10 +77,10 @@ public class SomeService {
 // Controller
 @PostMapping("/api/v1/client/resources")
 public ResponseEntity<?> create(
-  @AuthenticationPrincipal UserPrincipal userPrincipal,
-  @Valid @RequestBody CreateRequest request
+    @AuthenticationPrincipal UserPrincipal userPrincipal,
+    @Valid @RequestBody CreateRequest request
 ) {
-  return service.create(userPrincipal.getAuthDto(), request);
+    return service.create(userPrincipal.getAuthDto(), request);
 }
 
 // Service
@@ -88,23 +88,23 @@ public ResponseEntity<?> create(
 @Transactional(readOnly = true)
 public class SomeService {
 
-  @Transactional
-  public ResponseEntity<?> create(AuthDto authDto, CreateRequest request) {
-    User user = userRepository.findByUserId(authDto.getUserId())
-      .orElseThrow(() -> new CustomException(
-        HttpStatus.BAD_REQUEST,
-        "sm.common.fail.user_not_found",
-        "올바르지 않은 사용자 정보입니다."
-      ));
-    Entity entity = request.toEntity(user);
-    Entity saved = repository.save(entity);
-    return ApiResponseUtil.sendApiResponse(
-      HttpStatus.OK,
-      "sm.common.success.default",
-      "success",
-      EntityResponse.from(saved),
-      null
-    );
-  }
+    @Transactional
+    public ResponseEntity<?> create(AuthDto authDto, CreateRequest request) {
+        User user = userRepository.findByUserId(authDto.getUserId())
+            .orElseThrow(() -> new CustomException(
+                HttpStatus.BAD_REQUEST,
+                "sm.common.fail.user_not_found",
+                "올바르지 않은 사용자 정보입니다."
+            ));
+        Entity entity = request.toEntity(user);
+        Entity saved = repository.save(entity);
+        return ApiResponseUtil.sendApiResponse(
+            HttpStatus.OK,
+            "sm.common.success.default",
+            "success",
+            EntityResponse.from(saved),
+            null
+        );
+    }
 }
 ```

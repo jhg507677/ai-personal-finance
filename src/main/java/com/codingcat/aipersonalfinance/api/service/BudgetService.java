@@ -1,4 +1,4 @@
-package com.codingcat.aipersonalfinance.service;
+package com.codingcat.aipersonalfinance.api.service;
 
 import com.codingcat.aipersonalfinance.api.dto.budget.BudgetCreateRequest;
 import com.codingcat.aipersonalfinance.api.dto.budget.BudgetResponse;
@@ -10,14 +10,17 @@ import com.codingcat.aipersonalfinance.domain.ledger.LedgerRepository;
 import com.codingcat.aipersonalfinance.domain.ledger.LedgerType;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
-import com.codingcat.aipersonalfinance.exception.BusinessException;
-import com.codingcat.aipersonalfinance.exception.ErrorCode;
+import com.codingcat.aipersonalfinance.module.exception.CustomException;
+import com.codingcat.aipersonalfinance.module.model.ApiResponseUtil;
+import com.codingcat.aipersonalfinance.module.security.AuthDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,17 +36,9 @@ public class BudgetService {
   private final UserRepository userRepository;
   private final LedgerRepository ledgerRepository;
 
-  /**
-   * 예산을 생성합니다.
-   *
-   * @param userId 사용자 ID
-   * @param request 예산 생성 요청 DTO
-   * @return 생성된 예산 응답 DTO
-   * @throws BusinessException 사용자를 찾을 수 없거나 기간이 겹치는 경우
-   */
   @Transactional
-  public BudgetResponse createBudget(String userId, BudgetCreateRequest request) {
-    User user = findUserByUserId(userId);
+  public ResponseEntity<?> createBudget(AuthDto authDto, BudgetCreateRequest request) {
+    User user = findUserByUserId(authDto.getUserId());
 
     // 같은 카테고리, 같은 기간에 예산이 이미 존재하는지 확인
     validateDuplicatePeriod(user, request);
@@ -66,34 +61,28 @@ public class BudgetService {
             .build();
 
     Budget savedBudget = budgetRepository.save(budget);
-    return BudgetResponse.from(savedBudget);
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK,
+        "sm.common.success.default",
+        "success",
+        BudgetResponse.from(savedBudget),
+        null);
   }
 
-  /**
-   * 예산 상세 정보를 조회합니다.
-   *
-   * @param userId 사용자 ID
-   * @param budgetId 예산 ID
-   * @return 예산 응답 DTO
-   * @throws BusinessException 예산을 찾을 수 없거나 접근 권한이 없는 경우
-   */
-  public BudgetResponse getBudget(String userId, Long budgetId) {
+  public ResponseEntity<?> getBudget(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(userId, budget);
-    return BudgetResponse.from(budget);
+    validateBudgetOwnership(authDto.getUserId(), budget);
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK,
+        "sm.common.success.default",
+        "success",
+        BudgetResponse.from(budget),
+        null);
   }
 
-  /**
-   * 예산 사용 현황을 조회합니다.
-   *
-   * @param userId 사용자 ID
-   * @param budgetId 예산 ID
-   * @return 예산 사용 현황 응답 DTO
-   * @throws BusinessException 예산을 찾을 수 없거나 접근 권한이 없는 경우
-   */
-  public BudgetUsageResponse getBudgetUsage(String userId, Long budgetId) {
+  public ResponseEntity<?> getBudgetUsage(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(userId, budget);
+    validateBudgetOwnership(authDto.getUserId(), budget);
 
     // 해당 기간 내 실제 지출 집계
     BigDecimal totalSpent =
@@ -121,29 +110,25 @@ public class BudgetService {
         usagePercentage.compareTo(budget.getAlertThreshold()) >= 0
             && !budget.getIsAlertSent();
 
-    return BudgetUsageResponse.builder()
-        .budget(BudgetResponse.from(budget))
-        .totalSpent(totalSpent)
-        .remainingAmount(remainingAmount)
-        .usagePercentage(usagePercentage)
-        .isExceeded(isExceeded)
-        .shouldAlert(shouldAlert)
-        .build();
+    BudgetUsageResponse response =
+        BudgetUsageResponse.builder()
+            .budget(BudgetResponse.from(budget))
+            .totalSpent(totalSpent)
+            .remainingAmount(remainingAmount)
+            .usagePercentage(usagePercentage)
+            .isExceeded(isExceeded)
+            .shouldAlert(shouldAlert)
+            .build();
+
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK, "sm.common.success.default", "success", response, null);
   }
 
-  /**
-   * 예산을 수정합니다.
-   *
-   * @param userId 사용자 ID
-   * @param budgetId 예산 ID
-   * @param request 예산 수정 요청 DTO
-   * @return 수정된 예산 응답 DTO
-   * @throws BusinessException 예산을 찾을 수 없거나 접근 권한이 없는 경우
-   */
   @Transactional
-  public BudgetResponse updateBudget(String userId, Long budgetId, BudgetUpdateRequest request) {
+  public ResponseEntity<?> updateBudget(
+      AuthDto authDto, Long budgetId, BudgetUpdateRequest request) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(userId, budget);
+    validateBudgetOwnership(authDto.getUserId(), budget);
 
     budget.update(
         request.getName(),
@@ -155,33 +140,30 @@ public class BudgetService {
         request.getAlertThreshold(),
         request.getIsActive());
 
-    return BudgetResponse.from(budget);
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK,
+        "sm.common.success.default",
+        "success",
+        BudgetResponse.from(budget),
+        null);
   }
 
-  /**
-   * 예산을 삭제합니다 (Soft Delete).
-   *
-   * @param userId 사용자 ID
-   * @param budgetId 예산 ID
-   * @throws BusinessException 예산을 찾을 수 없거나 접근 권한이 없는 경우
-   */
   @Transactional
-  public void deleteBudget(String userId, Long budgetId) {
+  public ResponseEntity<?> deleteBudget(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(userId, budget);
+    validateBudgetOwnership(authDto.getUserId(), budget);
     budget.softDelete();
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK, "sm.common.success.default", "success", null, null);
   }
 
-  /**
-   * 사용자의 활성화된 예산 목록을 조회합니다.
-   *
-   * @param userId 사용자 ID
-   * @return 예산 목록
-   */
-  public List<BudgetResponse> getBudgetList(String userId) {
-    User user = findUserByUserId(userId);
+  public ResponseEntity<?> getBudgetList(AuthDto authDto) {
+    User user = findUserByUserId(authDto.getUserId());
     List<Budget> budgets = budgetRepository.findByUserAndIsActiveTrue(user);
-    return budgets.stream().map(BudgetResponse::from).collect(Collectors.toList());
+    List<BudgetResponse> responses =
+        budgets.stream().map(BudgetResponse::from).collect(Collectors.toList());
+    return ApiResponseUtil.sendApiResponse(
+        HttpStatus.OK, "sm.common.success.default", "success", responses, null);
   }
 
   /**
@@ -193,8 +175,10 @@ public class BudgetService {
             user, request.getCategory(), request.getStartDate(), request.getEndDate());
 
     if (existingBudget.isPresent()) {
-      throw new BusinessException(
-          ErrorCode.INVALID_INPUT_VALUE, "같은 카테고리의 예산이 해당 기간에 이미 존재합니다");
+      throw new CustomException(
+          HttpStatus.BAD_REQUEST,
+          "sm.budget.fail.duplicate_period",
+          "같은 카테고리의 예산이 해당 기간에 이미 존재합니다");
     }
   }
 
@@ -204,7 +188,12 @@ public class BudgetService {
   private User findUserByUserId(String userId) {
     return userRepository
         .findByUserId(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(
+            () ->
+                new CustomException(
+                    HttpStatus.BAD_REQUEST,
+                    "sm.common.fail.user_not_found",
+                    "올바르지 않은 사용자 정보입니다."));
   }
 
   /**
@@ -214,7 +203,9 @@ public class BudgetService {
     return budgetRepository
         .findById(budgetId)
         .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "예산을 찾을 수 없습니다"));
+            () ->
+                new CustomException(
+                    HttpStatus.NOT_FOUND, "sm.budget.fail.not_found", "예산을 찾을 수 없습니다"));
   }
 
   /**
@@ -222,7 +213,10 @@ public class BudgetService {
    */
   private void validateBudgetOwnership(String userId, Budget budget) {
     if (!budget.getUser().getUserId().equals(userId)) {
-      throw new BusinessException(ErrorCode.ACCESS_DENIED, "본인의 예산만 접근할 수 있습니다");
+      throw new CustomException(
+          HttpStatus.FORBIDDEN,
+          "sm.budget.fail.access_denied",
+          "본인의 예산만 접근할 수 있습니다");
     }
   }
 }
