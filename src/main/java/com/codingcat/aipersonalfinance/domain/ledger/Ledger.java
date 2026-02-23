@@ -75,7 +75,7 @@ public class Ledger extends BaseEntity {
 
   @PastOrPresent
   @Column(name = "recorded_date", nullable = false)
-  private LocalDate recordOn;
+  private LocalDate recordedDate;
   private LocalDateTime deletedAt;
 
   @Schema(description = "정기 거래로부터 자동 생성되었는지 여부")
