@@ -7,6 +7,7 @@ import com.codingcat.aipersonalfinance.domain.ledger.dto.MonthlySummary;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.PaymentMethodSummary;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
+import com.codingcat.aipersonalfinance.module.config.QueryDslConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,7 +25,7 @@ import org.springframework.test.context.TestPropertySource;
  * QueryDSL을 사용한 통계 쿼리 테스트
  */
 @DataJpaTest
-@Import(com.codingcat.aipersonalfinance.config.QueryDslConfig.class)
+@Import(QueryDslConfig.class)
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })

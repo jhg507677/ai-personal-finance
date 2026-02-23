@@ -70,3 +70,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+jwt:
+  issuer: https://github.com/jhg507677
+  admin_secret: secretAdmin123secretAdmin123secretAdmin123secretAdmin12
+  user_secret: secretUser123secretUser123secretUser123secretUser12
+  access_expire_time: 18000
+  refresh_expire_time: 1800000

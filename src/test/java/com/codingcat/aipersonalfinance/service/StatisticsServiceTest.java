@@ -6,11 +6,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.codingcat.aipersonalfinance.api.dto.statistics.CategoryStatsResponse;
-import com.codingcat.aipersonalfinance.api.dto.statistics.MonthlyStatsResponse;
-import com.codingcat.aipersonalfinance.api.dto.statistics.PaymentMethodStatsResponse;
-import com.codingcat.aipersonalfinance.api.dto.statistics.TrendResponse;
-import com.codingcat.aipersonalfinance.api.service.StatisticsService;
+import com.codingcat.aipersonalfinance.domain.statistics.CategoryStatsResponse;
+import com.codingcat.aipersonalfinance.domain.statistics.MonthlyStatsResponse;
+import com.codingcat.aipersonalfinance.domain.statistics.PaymentMethodStatsResponse;
+import com.codingcat.aipersonalfinance.domain.statistics.TrendResponse;
+import com.codingcat.aipersonalfinance.domain.statistics.StatisticsService;
 import com.codingcat.aipersonalfinance.domain.ledger.Category;
 import com.codingcat.aipersonalfinance.domain.ledger.LedgerRepository;
 import com.codingcat.aipersonalfinance.domain.ledger.PaymentMethod;

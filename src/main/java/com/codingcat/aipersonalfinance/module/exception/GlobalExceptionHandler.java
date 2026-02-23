@@ -1,6 +1,7 @@
 package com.codingcat.aipersonalfinance.module.exception;
 
-import com.codingcat.aipersonalfinance.module.model.ApiResponseUtil;
+import com.codingcat.aipersonalfinance.module.exception.CustomException;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseVo;
 import io.swagger.v3.oas.annotations.Hidden;
 import java.nio.charset.StandardCharsets;
 import org.springframework.http.HttpHeaders;
@@ -25,11 +26,11 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(CustomException.class)
-  public ResponseEntity<ApiResponseUtil<?>> handleCustomException(
+  public ResponseEntity<ApiResponseVo<?>> handleCustomException(
     CustomException custom
   ) {
     custom.printStackTrace(); // 로깅
-    ApiResponseUtil<?> response = ApiResponseUtil.builder()
+    ApiResponseVo<?> response = ApiResponseVo.builder()
       .status(custom.getHttpStatus())
       .code(custom.getCustomCode())
       .message(custom.getMessage())
@@ -39,14 +40,14 @@ public class GlobalExceptionHandler {
 
   /*** @Valid 검증 실패 시 처리*/
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiResponseUtil<?>> handleValidationException(MethodArgumentNotValidException ex) {
+  public ResponseEntity<ApiResponseVo<?>> handleValidationException(MethodArgumentNotValidException ex) {
     ex.printStackTrace(); // 로깅
     BindingResult bindingResult = ex.getBindingResult();
 
     // 첫 번째 필드 오류 메시지 가져오기
     FieldError fieldError = bindingResult.getFieldErrors().get(0);
 
-    ApiResponseUtil<?> result = ApiResponseUtil.builder()
+    ApiResponseVo<?> result = ApiResponseVo.builder()
       .status(HttpStatus.BAD_REQUEST)
       .code("sm.common.fail.missing_field")
       .message("해당 필드 '" + fieldError.getField() + "' 오류: " + fieldError.getDefaultMessage())
@@ -58,9 +59,9 @@ public class GlobalExceptionHandler {
 
   /*** 헤더 필수 값 누락 시 처리*/
   @ExceptionHandler(MissingRequestHeaderException.class)
-  public ResponseEntity<ApiResponseUtil<?>> handleMissingHeaderException(MissingRequestHeaderException ex) {
+  public ResponseEntity<ApiResponseVo<?>> handleMissingHeaderException(MissingRequestHeaderException ex) {
     ex.printStackTrace(); // 로깅
-    ApiResponseUtil<?> result = ApiResponseUtil.builder()
+    ApiResponseVo<?> result = ApiResponseVo.builder()
       .status(HttpStatus.BAD_REQUEST)
       .code("sm.common.fail.missing_header")
       .message("헤더에 '" + ex.getHeaderName() + "' 값이 누락되어 있습니다.")
@@ -71,9 +72,9 @@ public class GlobalExceptionHandler {
 
   /*** 위에서 정의히지 않은 모든 에러*/
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponseUtil<?>> handleAllException(Exception ex) {
+  public ResponseEntity<ApiResponseVo<?>> handleAllException(Exception ex) {
     ex.printStackTrace(); // 로깅
-    ApiResponseUtil<?> result = ApiResponseUtil.builder()
+    ApiResponseVo<?> result = ApiResponseVo.builder()
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .code("sm.common.fail.server_error")
       .message("서버에 예상하지 못한 에러가 발생했습니다. 관리자에게 문의해주세요.")

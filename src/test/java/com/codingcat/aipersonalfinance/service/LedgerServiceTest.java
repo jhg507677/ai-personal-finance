@@ -7,11 +7,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.codingcat.aipersonalfinance.api.dto.ledger.LedgerCreateRequest;
-import com.codingcat.aipersonalfinance.api.dto.ledger.LedgerResponse;
-import com.codingcat.aipersonalfinance.api.dto.ledger.LedgerSearchCondition;
-import com.codingcat.aipersonalfinance.api.dto.ledger.LedgerUpdateRequest;
-import com.codingcat.aipersonalfinance.api.service.LedgerService;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerCreateRequest;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerResponse;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchCondition;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerUpdateRequest;
+import com.codingcat.aipersonalfinance.domain.ledger.LedgerService;
 import com.codingcat.aipersonalfinance.domain.ledger.Category;
 import com.codingcat.aipersonalfinance.domain.ledger.Ledger;
 import com.codingcat.aipersonalfinance.domain.ledger.LedgerRepository;

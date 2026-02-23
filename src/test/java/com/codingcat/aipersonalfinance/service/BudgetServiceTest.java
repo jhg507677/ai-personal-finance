@@ -7,10 +7,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.codingcat.aipersonalfinance.api.dto.budget.BudgetCreateRequest;
-import com.codingcat.aipersonalfinance.api.dto.budget.BudgetResponse;
-import com.codingcat.aipersonalfinance.api.dto.budget.BudgetUpdateRequest;
-import com.codingcat.aipersonalfinance.api.dto.budget.BudgetUsageResponse;
+import com.codingcat.aipersonalfinance.domain.budget.BudgetService;
+import com.codingcat.aipersonalfinance.domain.budget.dto.BudgetCreateRequest;
+import com.codingcat.aipersonalfinance.domain.budget.dto.BudgetResponse;
+import com.codingcat.aipersonalfinance.domain.budget.dto.BudgetUpdateRequest;
+import com.codingcat.aipersonalfinance.domain.budget.dto.BudgetUsageResponse;
 import com.codingcat.aipersonalfinance.domain.budget.Budget;
 import com.codingcat.aipersonalfinance.domain.budget.BudgetPeriod;
 import com.codingcat.aipersonalfinance.domain.budget.BudgetRepository;

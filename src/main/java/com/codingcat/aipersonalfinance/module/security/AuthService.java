@@ -4,7 +4,8 @@ import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.CookieUtil;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
-import com.codingcat.aipersonalfinance.module.model.ApiResponseUtil;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseVo;
 import com.codingcat.aipersonalfinance.module.security.token.RefreshToken;
 import com.codingcat.aipersonalfinance.module.security.token.RefreshTokenRepository;
 import com.codingcat.aipersonalfinance.module.security.token.TokenProvider;
@@ -41,7 +42,7 @@ public class AuthService {
   }
 
   // 토큰 생성하기
-  public ApiResponseUtil<?> generateLoginToken(
+  public ApiResponseVo<?> generateLoginToken(
     HttpServletResponse response,
     AuthDto auth
   ){
@@ -64,9 +65,9 @@ public class AuthService {
       loginResponse.setUserIdx(auth.getUserIdx());
 
       CookieUtil.addSecureCookie(response, tokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken.token(), Duration.ofDays(7));
-      return ApiResponseUtil.ok(loginResponse);
+      return ApiResponseVo.ok(loginResponse);
     }catch (Exception e){
-      return ApiResponseUtil.failServer(e);
+      return ApiResponseVo.failServer(e);
     }
   }
 

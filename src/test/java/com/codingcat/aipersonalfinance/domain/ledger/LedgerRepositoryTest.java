@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.codingcat.aipersonalfinance.config.TestJpaConfig;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
+import com.codingcat.aipersonalfinance.module.config.QueryDslConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,7 +24,7 @@ import org.springframework.context.annotation.Import;
  */
 @DisplayName("LedgerRepository 테스트")
 @DataJpaTest
-@Import({TestJpaConfig.class, com.codingcat.aipersonalfinance.config.QueryDslConfig.class})
+@Import({TestJpaConfig.class, QueryDslConfig.class})
 class LedgerRepositoryTest {
 
   @Autowired private LedgerRepository ledgerRepository;
