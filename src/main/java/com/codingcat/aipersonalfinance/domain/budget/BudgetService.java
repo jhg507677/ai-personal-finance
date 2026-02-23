@@ -9,8 +9,9 @@ import com.codingcat.aipersonalfinance.domain.ledger.LedgerType;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
-import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
+
+import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -43,23 +44,14 @@ public class BudgetService {
 
     Budget budget = request.toEntity(user);
     Budget savedBudget = budgetRepository.save(budget);
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        BudgetResponse.from(savedBudget),
-        null);
+    return sendApiOK(BudgetResponse.from(savedBudget));
   }
 
   public ResponseEntity<?> getBudget(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
     validateBudgetOwnership(authDto.getUserId(), budget);
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        BudgetResponse.from(budget),
-        null);
+    return sendApiOK(
+        BudgetResponse.from(budget));
   }
 
   public ResponseEntity<?> getBudgetUsage(AuthDto authDto, Long budgetId) {
@@ -122,12 +114,8 @@ public class BudgetService {
         request.getAlertThreshold(),
         request.getIsActive());
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        BudgetResponse.from(budget),
-        null);
+    return sendApiOK(
+        BudgetResponse.from(budget));
   }
 
   @Transactional

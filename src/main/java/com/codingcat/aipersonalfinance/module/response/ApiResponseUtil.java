@@ -66,4 +66,16 @@ public class ApiResponseUtil<T> {
       .headers(jsonHeaders())
       .body(response);
   }
+
+  /**
+   * 성공 응답 헬퍼 메서드
+   */
+  public static <T> ResponseEntity<?> sendApiOK(T data) {
+    return sendApiResponse(
+        HttpStatus.OK,
+        "sm.common.success.default",
+        "success",
+        data,
+        null);
+  }
 }

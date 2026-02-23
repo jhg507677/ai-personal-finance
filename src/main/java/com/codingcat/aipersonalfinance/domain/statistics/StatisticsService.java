@@ -7,8 +7,9 @@ import com.codingcat.aipersonalfinance.domain.ledger.dto.PaymentMethodSummary;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
-import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
+
+import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -50,8 +51,7 @@ public class StatisticsService {
                         .build())
             .collect(Collectors.toList());
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", responses, null);
+    return sendApiOK( responses);
   }
 
   public ResponseEntity<?> getCategoryStatistics(
@@ -63,7 +63,7 @@ public class StatisticsService {
 
     if (summaries.isEmpty()) {
       return ApiResponseUtil.sendApiResponse(
-          HttpStatus.OK, "sm.common.success.default", "success", List.of(), null);
+          HttpStatus.OK, "sm.common.success.default", "success", List.of());
     }
 
     // 전체 지출 합계 계산
@@ -96,8 +96,7 @@ public class StatisticsService {
                 })
             .collect(Collectors.toList());
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", responses, null);
+    return sendApiOK( responses);
   }
 
   public ResponseEntity<?> getPaymentMethodStatistics(
@@ -118,8 +117,7 @@ public class StatisticsService {
                         .build())
             .collect(Collectors.toList());
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", responses, null);
+    return sendApiOK( responses);
   }
 
   public ResponseEntity<?> getTrendAnalysis(AuthDto authDto, LocalDate currentMonth) {
@@ -179,8 +177,7 @@ public class StatisticsService {
             .incomeChangeRate(incomeChangeRate)
             .build();
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", response, null);
+    return sendApiOK( response);
   }
 
   public ResponseEntity<?> getTopCategories(
@@ -219,8 +216,7 @@ public class StatisticsService {
                 })
             .collect(Collectors.toList());
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", responses, null);
+    return sendApiOK( responses);
   }
 
   // === Private Helper Methods ===

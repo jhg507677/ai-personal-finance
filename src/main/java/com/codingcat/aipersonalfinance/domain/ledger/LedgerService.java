@@ -7,8 +7,9 @@ import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerUpdateRequest;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
-import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
+
+import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -36,23 +37,15 @@ public class LedgerService {
     User user = findUserByUserId(authDto.getUserId());
     Ledger ledger = request.toEntity(user);
     Ledger savedLedger = ledgerRepository.save(ledger);
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        LedgerResponse.from(savedLedger),
-        null);
+    return sendApiOK(
+        LedgerResponse.from(savedLedger));
   }
 
   public ResponseEntity<?> getLedger(AuthDto authDto, Long ledgerId) {
     Ledger ledger = findLedgerById(ledgerId);
     validateLedgerOwnership(authDto.getUserId(), ledger);
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        LedgerResponse.from(ledger),
-        null);
+    return sendApiOK(
+        LedgerResponse.from(ledger));
   }
 
   @Transactional
@@ -70,12 +63,8 @@ public class LedgerService {
         request.getPaymentMethod(),
         request.getRecordedDate());
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK,
-        "sm.common.success.default",
-        "success",
-        LedgerResponse.from(ledger),
-        null);
+    return sendApiOK(
+        LedgerResponse.from(ledger));
   }
 
   @Transactional
