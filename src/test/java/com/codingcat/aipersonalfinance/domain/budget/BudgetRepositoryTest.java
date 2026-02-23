@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
  */
 @DisplayName("BudgetRepository 테스트")
 @DataJpaTest
-@Import(TestJpaConfig.class)
+@Import({TestJpaConfig.class, com.codingcat.aipersonalfinance.config.QueryDslConfig.class})
 class BudgetRepositoryTest {
 
   @Autowired private BudgetRepository budgetRepository;

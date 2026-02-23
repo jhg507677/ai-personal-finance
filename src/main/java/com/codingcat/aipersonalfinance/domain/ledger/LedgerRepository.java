@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
  * Ledger Repository
  * 거래 내역 조회 및 통계 기능을 제공합니다.
  */
-public interface LedgerRepository extends JpaRepository<Ledger, Long> {
+public interface LedgerRepository extends JpaRepository<Ledger, Long>, LedgerRepositoryCustom {
 
   /**
    * 사용자의 활성 거래 내역을 조회합니다.

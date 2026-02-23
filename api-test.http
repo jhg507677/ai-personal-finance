@@ -247,9 +247,45 @@ Authorization: Bearer {{accessToken}}
 }
 
 ###############################################
+### Statistics API 테스트 (통계)
+###############################################
+
+### 27. 월별 통계 조회
+GET {{host}}/api/v1/client/statistics/monthly?startDate=2024-01-01&endDate=2024-03-31
+Authorization: Bearer {{accessToken}}
+
+### 28. 카테고리별 통계 조회
+GET {{host}}/api/v1/client/statistics/category?startDate=2024-01-01&endDate=2024-01-31
+Authorization: Bearer {{accessToken}}
+
+### 29. 결제수단별 통계 조회
+GET {{host}}/api/v1/client/statistics/payment-method?startDate=2024-01-01&endDate=2024-01-31
+Authorization: Bearer {{accessToken}}
+
+### 30. 지출 트렌드 분석 (전월 대비)
+GET {{host}}/api/v1/client/statistics/trend?targetMonth=2024-02-15
+Authorization: Bearer {{accessToken}}
+
+### 31. Top 5 카테고리 조회
+GET {{host}}/api/v1/client/statistics/top-categories?startDate=2024-01-01&endDate=2024-01-31&limit=5
+Authorization: Bearer {{accessToken}}
+
+### 32. Top 3 카테고리 조회
+GET {{host}}/api/v1/client/statistics/top-categories?startDate=2024-01-01&endDate=2024-01-31&limit=3
+Authorization: Bearer {{accessToken}}
+
+### 33. 현재 월 통계 조회
+GET {{host}}/api/v1/client/statistics/monthly?startDate=2026-02-01&endDate=2026-02-28
+Authorization: Bearer {{accessToken}}
+
+### 34. 분기별 통계 조회 (Q1 2024)
+GET {{host}}/api/v1/client/statistics/monthly?startDate=2024-01-01&endDate=2024-03-31
+Authorization: Bearer {{accessToken}}
+
+###############################################
 ### 참고: 사용 가능한 Enum 값
 ###############################################
 # LedgerType: INCOME, EXPENSE
 # Category: FOOD, TRANSPORT, CAFE, SHOPPING, LIVING, COMMUNICATION, MEDICAL, EDUCATION, SUBSCRIPTION, ETC
-# PaymentMethod: CASH, CARD, TRANSFER, ETC
+# PaymentMethod: CARD, CASH, TRANSFER, KAKAOPAY, NAVERPAY
 # BudgetPeriod: WEEKLY, MONTHLY, YEARLY
