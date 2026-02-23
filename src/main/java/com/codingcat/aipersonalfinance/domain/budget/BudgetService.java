@@ -9,6 +9,7 @@ import com.codingcat.aipersonalfinance.domain.ledger.LedgerType;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
 
 import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
@@ -35,6 +36,7 @@ public class BudgetService {
   private final UserRepository userRepository;
   private final LedgerRepository ledgerRepository;
 
+  // 예상 생성
   @Transactional
   public ResponseEntity<?> createBudget(AuthDto authDto, BudgetCreateRequest request) {
     User user = findUserByUserId(authDto.getUserId());
@@ -47,13 +49,16 @@ public class BudgetService {
     return sendApiOK(BudgetResponse.from(savedBudget));
   }
 
+  // 예산 조회
   public ResponseEntity<?> getBudget(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
+
+    // 예산 소유자 검사
     validateBudgetOwnership(authDto.getUserId(), budget);
-    return sendApiOK(
-        BudgetResponse.from(budget));
+    return sendApiOK(BudgetResponse.from(budget));
   }
 
+  // 예산 사용 현황 조회
   public ResponseEntity<?> getBudgetUsage(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
     validateBudgetOwnership(authDto.getUserId(), budget);
@@ -72,8 +77,11 @@ public class BudgetService {
     // 사용률 계산 (%)
     BigDecimal usagePercentage =
         totalSpent
+          // 소수점 4자리까지 계산, 반올림 방식: HALF_UP (일반적인 반올림)
             .divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
             .multiply(new BigDecimal("100"))
+
+            // 소수점 2자리로 정리
             .setScale(2, RoundingMode.HALF_UP);
 
     // 예산 초과 여부
@@ -94,28 +102,19 @@ public class BudgetService {
             .shouldAlert(shouldAlert)
             .build();
 
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", response, null);
+    return sendApiOK(response);
   }
 
+  // 예산 수정
   @Transactional
   public ResponseEntity<?> updateBudget(
       AuthDto authDto, Long budgetId, BudgetUpdateRequest request) {
     Budget budget = findBudgetById(budgetId);
     validateBudgetOwnership(authDto.getUserId(), budget);
 
-    budget.update(
-        request.getName(),
-        request.getBudgetPeriod(),
-        request.getStartDate(),
-        request.getEndDate(),
-        request.getAmount(),
-        request.getCategory(),
-        request.getAlertThreshold(),
-        request.getIsActive());
+    budget.update(request);
 
-    return sendApiOK(
-        BudgetResponse.from(budget));
+    return sendApiOK(BudgetResponse.from(budget));
   }
 
   @Transactional

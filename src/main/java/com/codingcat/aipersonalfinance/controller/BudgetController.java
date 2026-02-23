@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Budget", description = "예산 API")
 @Schema(description = "예산(Budget) 컨트롤러")
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "Budget", description = "예산 API")
 public class BudgetController {
   private final BudgetService budgetService;
 
@@ -35,9 +35,6 @@ public class BudgetController {
     return budgetService.createBudget(userPrincipal.getAuthDto(), request);
   }
 
-  /**
-   * 예산 상세 조회
-   */
   @GetMapping("/api/v1/client/budgets/{budgetId}")
   @Operation(summary = "예산 조회", description = "특정 예산의 상세 정보를 조회합니다")
   public ResponseEntity<?> getBudget(
@@ -46,10 +43,6 @@ public class BudgetController {
     return budgetService.getBudget(userPrincipal.getAuthDto(), budgetId);
   }
 
-
-  /**
-   * 예산 사용 현황 조회
-   */
   @GetMapping("/api/v1/client/budgets/{budgetId}/usage")
   @Operation(summary = "예산 사용 현황 조회", description = "예산 대비 실제 지출 현황을 조회합니다")
   public ResponseEntity<?> getBudgetUsage(
@@ -58,9 +51,6 @@ public class BudgetController {
     return budgetService.getBudgetUsage(userPrincipal.getAuthDto(), budgetId);
   }
 
-  /**
-   * 예산 수정
-   */
   @PutMapping("/api/v1/client/budgets/{budgetId}")
   @Operation(summary = "예산 수정", description = "예산을 수정합니다")
   public ResponseEntity<?> updateBudget(
@@ -70,9 +60,6 @@ public class BudgetController {
     return budgetService.updateBudget(userPrincipal.getAuthDto(), budgetId, request);
   }
 
-  /**
-   * 예산 삭제 (Soft Delete)
-   */
   @DeleteMapping("/api/v1/client/budgets/{budgetId}")
   @Operation(summary = "예산 삭제", description = "예산을 삭제합니다 (Soft Delete)")
   public ResponseEntity<?> deleteBudget(
@@ -81,9 +68,6 @@ public class BudgetController {
     return budgetService.deleteBudget(userPrincipal.getAuthDto(), budgetId);
   }
 
-  /**
-   * 예산 목록 조회
-   */
   @GetMapping("/api/v1/client/budgets")
   @Operation(summary = "예산 목록 조회", description = "사용자의 활성화된 예산 목록을 조회합니다")
   public ResponseEntity<?> getBudgetList(

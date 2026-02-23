@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class BudgetResponse {
-
   private Long budgetIdx;
   private String name;
   private BudgetPeriod budgetPeriod;
