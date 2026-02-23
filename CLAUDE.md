@@ -97,34 +97,47 @@ public Entity toEntity(User user) {
 
 ## 11-1. Update Request DTO 규칙
 
--   **PUT 방식**: 전체 리소스 교체 (모든 필드 필수)
--   모든 필드에 `@NotNull` 추가
+-   **Entity와 비교하여 필수 필드만 `@NotNull` 추가**
 -   필드별 추가 검증 (`@Positive`, `@Size` 등)
+-   선택 필드는 null 체크 처리
     예:
     ``` java
     @Getter
     public class BudgetUpdateRequest {
+      // 필수 필드 (Entity: nullable = false)
       @NotNull(message = "예산 이름은 필수입니다")
       @Size(min = 1, max = 100)
       private String name;
 
       @NotNull(message = "예산 금액은 필수입니다")
-      @Positive(message = "예산 금액은 0보다 커야 합니다")
+      @Positive
       private BigDecimal amount;
 
       @NotNull(message = "활성 상태는 필수입니다")
       private Boolean isActive;
-      // ... 모든 필드에 @NotNull
+
+      // 선택 필드 (null 가능)
+      private Category category;
+
+      @Positive
+      private BigDecimal alertThreshold;
     }
     ```
 
--   Entity의 `update()` 메서드는 null 체크 없이 간단하게
+-   Entity의 `update()` 메서드: 필수는 직접 할당, 선택은 null 체크
     ``` java
     public void update(BudgetUpdateRequest request) {
       this.name = request.getName();
       this.amount = request.getAmount();
       this.isActive = request.getIsActive();
-      // ... 모든 필드 직접 할당
+
+      // 선택 필드는 null이 아닐 때만 업데이트
+      if (request.getCategory() != null) {
+        this.category = request.getCategory();
+      }
+      if (request.getAlertThreshold() != null) {
+        this.alertThreshold = request.getAlertThreshold();
+      }
     }
     ```
 

@@ -38,12 +38,10 @@ public class BudgetUpdateRequest {
   @Positive(message = "예산 금액은 0보다 커야 합니다")
   private BigDecimal amount;
 
-  @NotNull(message = "카테고리는 필수입니다")
-  private Category category;
+  private Category category; // 선택사항 (null이면 전체 예산)
 
-  @NotNull(message = "알림 임계값은 필수입니다")
   @Positive(message = "알림 임계값은 0보다 커야 합니다")
-  private BigDecimal alertThreshold;
+  private BigDecimal alertThreshold; // 선택사항 (기본값 80.00)
 
   @NotNull(message = "활성 상태는 필수입니다")
   private Boolean isActive;
