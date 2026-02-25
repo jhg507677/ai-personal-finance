@@ -6,6 +6,7 @@ import com.codingcat.aipersonalfinance.config.TestJpaConfig;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.config.QueryDslConfig;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +30,7 @@ class LedgerRepositoryTest {
 
   @Autowired private LedgerRepository ledgerRepository;
   @Autowired private UserRepository userRepository;
+  @Autowired private EntityManager entityManager;
 
   private User testUser;
   private User otherUser;
@@ -112,6 +114,10 @@ class LedgerRepositoryTest {
       ledger.sDelete();
       ledgerRepository.save(ledger);
 
+      // EntityManager를 flush하고 clear하여 @SQLRestriction이 적용되도록 함
+      entityManager.flush();
+      entityManager.clear();
+
       // When: 사용자의 모든 거래 조회
       List<Ledger> userLedgers = ledgerRepository.findByUser(testUser);
 
@@ -149,6 +155,10 @@ class LedgerRepositoryTest {
           ledgerRepository.save(createLedger(testUser, "삭제된거래", new BigDecimal("20000")));
       deletedLedger.sDelete();
       ledgerRepository.save(deletedLedger);
+
+      // EntityManager를 flush하고 clear하여 @SQLRestriction이 적용되도록 함
+      entityManager.flush();
+      entityManager.clear();
 
       // When: 조회
       List<Ledger> ledgers = ledgerRepository.findByUser(testUser);

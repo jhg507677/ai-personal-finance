@@ -78,4 +78,16 @@ public class ApiResponseUtil<T> {
         data,
         null);
   }
+
+  /**
+   * 성공 응답 헬퍼 메서드
+   */
+  public static <T> ResponseEntity<?> sendApiOKByDT(T data) {
+    return sendApiResponse(
+      HttpStatus.OK,
+      "sm.common.success.default",
+      "success",
+      data,
+      null);
+  }
 }

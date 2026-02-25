@@ -26,14 +26,11 @@ public class User extends BaseEntity {
   @Column(name = "user_idx", updatable = false)
   private Long idx;
 
-  @Column(name = "id", nullable = false, unique = true, length = 50)
-  private String userId;
-
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String email;
 
   @Column(nullable = false)
-  private String name;
+  private String nickname;
 
   @Column(nullable = false)
   private String password;
@@ -44,15 +41,14 @@ public class User extends BaseEntity {
   /*
   서비스코드에서 업데이트 기능을 사용할려면 서비스 메서드에 반드시 @Transactional을 붙여야함
   */
-  public void changeName(String name){
-    this.name = name;
+  public void changeNickname(String nickname){
+    this.nickname = nickname;
   }
 
   public static User createTestUser() {
     User user = new User();
-    user.userId = "testId";
     user.email = "test@test.com";
-    user.name = "테스트유저";
+    user.nickname = "테스트유저";
     user.password = "password";
     user.role = "USER";
     return user;
@@ -60,9 +56,8 @@ public class User extends BaseEntity {
 
   public static User createTestOtherUser() {
     User user = new User();
-    user.userId = "otherTestId";
     user.email = "other@test.com";
-    user.name = "다른유저";
+    user.nickname = "다른유저";
     user.password = "password";
     user.role = "USER";
     return user;
@@ -71,7 +66,7 @@ public class User extends BaseEntity {
   public AuthDto toAuth(){
     return AuthDto.builder()
       .serviceType(ServiceType.USER)
-      .userId(userId)
+      .userIdx(idx)
       .email(email)
       .build();
   }

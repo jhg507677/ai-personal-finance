@@ -19,6 +19,10 @@ import com.codingcat.aipersonalfinance.domain.ledger.Category;
 import com.codingcat.aipersonalfinance.domain.ledger.LedgerRepository;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
+import com.codingcat.aipersonalfinance.module.exception.CustomException;
+import com.codingcat.aipersonalfinance.module.model.ServiceType;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseVo;
+import com.codingcat.aipersonalfinance.module.security.AuthDto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +35,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 /**
  * BudgetService 테스트
@@ -73,7 +78,11 @@ class BudgetServiceTest {
     @DisplayName("1-1. 유효한 요청으로 예산을 생성할 수 있다")
     void createBudget_Success() {
       // Given
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
       BudgetCreateRequest request =
           BudgetCreateRequest.builder()
               .name("2024년 2월 식비 예산")
@@ -84,14 +93,16 @@ class BudgetServiceTest {
               .category(Category.FOOD)
               .build();
 
-      given(userRepository.findByUserId(userId)).willReturn(Optional.of(testUser));
+      given(userRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser));
       given(budgetRepository.findByUserAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
               any(), any(), any(), any()))
           .willReturn(Optional.empty()); // 기간 겹침 없음
       given(budgetRepository.save(any(Budget.class))).willReturn(testBudget);
 
       // When
-      BudgetResponse response = budgetService.createBudget(userId, request);
+      ResponseEntity<?> result = budgetService.createBudget(authDto, request);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      BudgetResponse response = (BudgetResponse) apiResponse.getContent();
 
       // Then
       assertThat(response).isNotNull();
@@ -104,7 +115,11 @@ class BudgetServiceTest {
     @DisplayName("1-2. 같은 카테고리, 같은 기간에 중복된 예산 생성 시 예외가 발생한다")
     void createBudget_DuplicatePeriod() {
       // Given
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
       BudgetCreateRequest request =
           BudgetCreateRequest.builder()
               .name("2024년 2월 식비 예산")
@@ -115,14 +130,14 @@ class BudgetServiceTest {
               .category(Category.FOOD)
               .build();
 
-      given(userRepository.findByUserId(userId)).willReturn(Optional.of(testUser));
+      given(userRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser));
       given(budgetRepository.findByUserAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
               any(), any(), any(), any()))
           .willReturn(Optional.of(testBudget)); // 기간 겹침 발견
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.createBudget(userId, request))
-          .isInstanceOf(BusinessException.class);
+      assertThatThrownBy(() -> budgetService.createBudget(authDto, request))
+          .isInstanceOf(CustomException.class);
 
       verify(budgetRepository, never()).save(any(Budget.class));
     }
@@ -131,7 +146,11 @@ class BudgetServiceTest {
     @DisplayName("1-3. 존재하지 않는 사용자로 예산 생성 시 예외가 발생한다")
     void createBudget_UserNotFound() {
       // Given
-      String userId = "invalidId";
+      AuthDto authDto = AuthDto.builder()
+          .email("invalid@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(999L)
+          .build();
       BudgetCreateRequest request =
           BudgetCreateRequest.builder()
               .name("예산")
@@ -141,12 +160,11 @@ class BudgetServiceTest {
               .amount(new BigDecimal("500000"))
               .build();
 
-      given(userRepository.findByUserId(userId)).willReturn(Optional.empty());
+      given(userRepository.findByEmail("invalid@test.com")).willReturn(Optional.empty());
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.createBudget(userId, request))
-          .isInstanceOf(BusinessException.class)
-          .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+      assertThatThrownBy(() -> budgetService.createBudget(authDto, request))
+          .isInstanceOf(CustomException.class);
     }
   }
 
@@ -159,12 +177,18 @@ class BudgetServiceTest {
     void getBudget_Success() {
       // Given
       Long budgetId = 1L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When
-      BudgetResponse response = budgetService.getBudget(userId, budgetId);
+      ResponseEntity<?> result = budgetService.getBudget(authDto, budgetId);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      BudgetResponse response = (BudgetResponse) apiResponse.getContent();
 
       // Then
       assertThat(response).isNotNull();
@@ -176,13 +200,17 @@ class BudgetServiceTest {
     void getBudget_NotFound() {
       // Given
       Long budgetId = 999L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.empty());
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.getBudget(userId, budgetId))
-          .isInstanceOf(BusinessException.class);
+      assertThatThrownBy(() -> budgetService.getBudget(authDto, budgetId))
+          .isInstanceOf(CustomException.class);
     }
 
     @Test
@@ -190,13 +218,17 @@ class BudgetServiceTest {
     void getBudget_AccessDenied() {
       // Given
       Long budgetId = 1L;
-      String otherUserId = "otherTestId";
+      AuthDto authDto = AuthDto.builder()
+          .email("other@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(999L)
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.getBudget(otherUserId, budgetId))
-          .isInstanceOf(BusinessException.class);
+      assertThatThrownBy(() -> budgetService.getBudget(authDto, budgetId))
+          .isInstanceOf(CustomException.class);
     }
   }
 
@@ -209,7 +241,11 @@ class BudgetServiceTest {
     void getBudgetUsage_Success() {
       // Given
       Long budgetId = 1L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
       // 300,000원 지출 (예산의 60%)
@@ -217,7 +253,9 @@ class BudgetServiceTest {
           .willReturn(new BigDecimal("300000"));
 
       // When
-      BudgetUsageResponse response = budgetService.getBudgetUsage(userId, budgetId);
+      ResponseEntity<?> result = budgetService.getBudgetUsage(authDto, budgetId);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      BudgetUsageResponse response = (BudgetUsageResponse) apiResponse.getContent();
 
       // Then
       assertThat(response).isNotNull();
@@ -232,7 +270,11 @@ class BudgetServiceTest {
     void getBudgetUsage_Exceeded() {
       // Given
       Long budgetId = 1L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
       // 600,000원 지출 (예산의 120%)
@@ -240,7 +282,9 @@ class BudgetServiceTest {
           .willReturn(new BigDecimal("600000"));
 
       // When
-      BudgetUsageResponse response = budgetService.getBudgetUsage(userId, budgetId);
+      ResponseEntity<?> result = budgetService.getBudgetUsage(authDto, budgetId);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      BudgetUsageResponse response = (BudgetUsageResponse) apiResponse.getContent();
 
       // Then
       assertThat(response.getTotalSpent()).isEqualByComparingTo(new BigDecimal("600000"));
@@ -255,7 +299,11 @@ class BudgetServiceTest {
     void getBudgetUsage_ShouldAlert() {
       // Given
       Long budgetId = 1L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
       // 알림 임계값 80%
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
@@ -264,7 +312,9 @@ class BudgetServiceTest {
           .willReturn(new BigDecimal("450000"));
 
       // When
-      BudgetUsageResponse response = budgetService.getBudgetUsage(userId, budgetId);
+      ResponseEntity<?> result = budgetService.getBudgetUsage(authDto, budgetId);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      BudgetUsageResponse response = (BudgetUsageResponse) apiResponse.getContent();
 
       // Then
       assertThat(response.getUsagePercentage()).isEqualByComparingTo(new BigDecimal("90.00"));
@@ -281,14 +331,20 @@ class BudgetServiceTest {
     void updateBudget_Success() {
       // Given
       Long budgetId = 1L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
       BudgetUpdateRequest request =
           BudgetUpdateRequest.builder().amount(new BigDecimal("600000")).build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When
-      BudgetResponse response = budgetService.updateBudget(userId, budgetId, request);
+      ResponseEntity<?> result = budgetService.updateBudget(authDto, budgetId, request);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      BudgetResponse response = (BudgetResponse) apiResponse.getContent();
 
       // Then
       assertThat(response).isNotNull();
@@ -300,15 +356,19 @@ class BudgetServiceTest {
     void updateBudget_AccessDenied() {
       // Given
       Long budgetId = 1L;
-      String otherUserId = "otherTestId";
+      AuthDto authDto = AuthDto.builder()
+          .email("other@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(999L)
+          .build();
       BudgetUpdateRequest request =
           BudgetUpdateRequest.builder().amount(new BigDecimal("600000")).build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.updateBudget(otherUserId, budgetId, request))
-          .isInstanceOf(BusinessException.class);
+      assertThatThrownBy(() -> budgetService.updateBudget(authDto, budgetId, request))
+          .isInstanceOf(CustomException.class);
     }
   }
 
@@ -321,16 +381,20 @@ class BudgetServiceTest {
     void deleteBudget_Success() {
       // Given
       Long budgetId = 1L;
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When
-      budgetService.sDeleteBudget(userId, budgetId);
+      budgetService.sDeleteBudget(authDto, budgetId);
 
       // Then
       verify(budgetRepository).findById(budgetId);
-      assertThat(testBudget.getDeletedDateTime()).isNotNull();
+      assertThat(testBudget.getDeletedAt()).isNotNull();
     }
 
     @Test
@@ -338,13 +402,17 @@ class BudgetServiceTest {
     void deleteBudget_AccessDenied() {
       // Given
       Long budgetId = 1L;
-      String otherUserId = "otherTestId";
+      AuthDto authDto = AuthDto.builder()
+          .email("other@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(999L)
+          .build();
 
       given(budgetRepository.findById(budgetId)).willReturn(Optional.of(testBudget));
 
       // When & Then
-      assertThatThrownBy(() -> budgetService.sDeleteBudget(otherUserId, budgetId))
-          .isInstanceOf(BusinessException.class);
+      assertThatThrownBy(() -> budgetService.sDeleteBudget(authDto, budgetId))
+          .isInstanceOf(CustomException.class);
     }
   }
 
@@ -356,13 +424,20 @@ class BudgetServiceTest {
     @DisplayName("6-1. 사용자의 활성화된 예산 목록을 조회할 수 있다")
     void getBudgetList_Success() {
       // Given
-      String userId = "testId";
+      AuthDto authDto = AuthDto.builder()
+          .email("test@test.com")
+          .serviceType(ServiceType.USER)
+          .userIdx(testUser.getIdx())
+          .build();
 
-      given(userRepository.findByUserId(userId)).willReturn(Optional.of(testUser));
+      given(userRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser));
       given(budgetRepository.findByUserAndIsActiveTrue(testUser)).willReturn(List.of(testBudget));
 
       // When
-      List<BudgetResponse> response = budgetService.getBudgetList(userId);
+      ResponseEntity<?> result = budgetService.getBudgetList(authDto);
+      ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) result.getBody();
+      @SuppressWarnings("unchecked")
+      List<BudgetResponse> response = (List<BudgetResponse>) apiResponse.getContent();
 
       // Then
       assertThat(response).isNotNull();

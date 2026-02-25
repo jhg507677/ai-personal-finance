@@ -19,6 +19,9 @@ import com.codingcat.aipersonalfinance.domain.ledger.dto.MonthlySummary;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.PaymentMethodSummary;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
+import com.codingcat.aipersonalfinance.module.model.ServiceType;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseVo;
+import com.codingcat.aipersonalfinance.module.security.AuthDto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 /**
  * StatisticsService 테스트
@@ -65,6 +69,11 @@ class StatisticsServiceTest {
             // Given
             LocalDate startDate = LocalDate.of(2026, 1, 1);
             LocalDate endDate = LocalDate.of(2026, 2, 28);
+            AuthDto authDto = AuthDto.builder()
+                    .email("test@test.com")
+                    .serviceType(ServiceType.USER)
+                    .userIdx(testUser.getIdx())
+                    .build();
 
             List<MonthlySummary> summaries = Arrays.asList(
                     MonthlySummary.builder()
@@ -83,13 +92,16 @@ class StatisticsServiceTest {
                             .build()
             );
 
-            when(userRepository.findByUserId("testId")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
             when(ledgerRepository.getMonthlySummary(eq(testUser), eq(startDate), eq(endDate)))
                     .thenReturn(summaries);
 
             // When
-            List<MonthlyStatsResponse> result = statisticsService.getMonthlyStatistics(
-                    "testId", startDate, endDate);
+            ResponseEntity<?> responseEntity = statisticsService.getMonthlyStatistics(
+                    authDto, startDate, endDate);
+            ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) responseEntity.getBody();
+            @SuppressWarnings("unchecked")
+            List<MonthlyStatsResponse> result = (List<MonthlyStatsResponse>) apiResponse.getContent();
 
             // Then
             assertThat(result).hasSize(2);
@@ -111,6 +123,11 @@ class StatisticsServiceTest {
             // Given
             LocalDate startDate = LocalDate.of(2026, 1, 1);
             LocalDate endDate = LocalDate.of(2026, 1, 31);
+            AuthDto authDto = AuthDto.builder()
+                    .email("test@test.com")
+                    .serviceType(ServiceType.USER)
+                    .userIdx(testUser.getIdx())
+                    .build();
 
             List<CategorySummary> summaries = Arrays.asList(
                     CategorySummary.builder()
@@ -125,13 +142,16 @@ class StatisticsServiceTest {
                             .build()
             );
 
-            when(userRepository.findByUserId("testId")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
             when(ledgerRepository.getCategorySummary(eq(testUser), eq(startDate), eq(endDate)))
                     .thenReturn(summaries);
 
             // When
-            List<CategoryStatsResponse> result = statisticsService.getCategoryStatistics(
-                    "testId", startDate, endDate);
+            ResponseEntity<?> responseEntity = statisticsService.getCategoryStatistics(
+                    authDto, startDate, endDate);
+            ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) responseEntity.getBody();
+            @SuppressWarnings("unchecked")
+            List<CategoryStatsResponse> result = (List<CategoryStatsResponse>) apiResponse.getContent();
 
             // Then
             assertThat(result).hasSize(2);
@@ -152,14 +172,22 @@ class StatisticsServiceTest {
             // Given
             LocalDate startDate = LocalDate.of(2026, 1, 1);
             LocalDate endDate = LocalDate.of(2026, 1, 31);
+            AuthDto authDto = AuthDto.builder()
+                    .email("test@test.com")
+                    .serviceType(ServiceType.USER)
+                    .userIdx(testUser.getIdx())
+                    .build();
 
-            when(userRepository.findByUserId("testId")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
             when(ledgerRepository.getCategorySummary(eq(testUser), eq(startDate), eq(endDate)))
                     .thenReturn(Arrays.asList());
 
             // When
-            List<CategoryStatsResponse> result = statisticsService.getCategoryStatistics(
-                    "testId", startDate, endDate);
+            ResponseEntity<?> responseEntity = statisticsService.getCategoryStatistics(
+                    authDto, startDate, endDate);
+            ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) responseEntity.getBody();
+            @SuppressWarnings("unchecked")
+            List<CategoryStatsResponse> result = (List<CategoryStatsResponse>) apiResponse.getContent();
 
             // Then
             assertThat(result).isEmpty();
@@ -176,6 +204,11 @@ class StatisticsServiceTest {
             // Given
             LocalDate startDate = LocalDate.of(2026, 1, 1);
             LocalDate endDate = LocalDate.of(2026, 1, 31);
+            AuthDto authDto = AuthDto.builder()
+                    .email("test@test.com")
+                    .serviceType(ServiceType.USER)
+                    .userIdx(testUser.getIdx())
+                    .build();
 
             List<PaymentMethodSummary> summaries = Arrays.asList(
                     PaymentMethodSummary.builder()
@@ -190,13 +223,16 @@ class StatisticsServiceTest {
                             .build()
             );
 
-            when(userRepository.findByUserId("testId")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
             when(ledgerRepository.getPaymentMethodSummary(eq(testUser), eq(startDate), eq(endDate)))
                     .thenReturn(summaries);
 
             // When
-            List<PaymentMethodStatsResponse> result = statisticsService.getPaymentMethodStatistics(
-                    "testId", startDate, endDate);
+            ResponseEntity<?> responseEntity = statisticsService.getPaymentMethodStatistics(
+                    authDto, startDate, endDate);
+            ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) responseEntity.getBody();
+            @SuppressWarnings("unchecked")
+            List<PaymentMethodStatsResponse> result = (List<PaymentMethodStatsResponse>) apiResponse.getContent();
 
             // Then
             assertThat(result).hasSize(2);
@@ -214,6 +250,11 @@ class StatisticsServiceTest {
         void getTrendAnalysis_Success() {
             // Given
             LocalDate currentMonth = LocalDate.of(2026, 2, 1);
+            AuthDto authDto = AuthDto.builder()
+                    .email("test@test.com")
+                    .serviceType(ServiceType.USER)
+                    .userIdx(testUser.getIdx())
+                    .build();
 
             List<MonthlySummary> summaries = Arrays.asList(
                     // 전월 (1월)
@@ -234,12 +275,14 @@ class StatisticsServiceTest {
                             .build()
             );
 
-            when(userRepository.findByUserId("testId")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
             when(ledgerRepository.getMonthlySummary(eq(testUser), any(LocalDate.class), any(LocalDate.class)))
                     .thenReturn(summaries);
 
             // When
-            TrendResponse result = statisticsService.getTrendAnalysis("testId", currentMonth);
+            ResponseEntity<?> responseEntity = statisticsService.getTrendAnalysis(authDto, currentMonth);
+            ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) responseEntity.getBody();
+            TrendResponse result = (TrendResponse) apiResponse.getContent();
 
             // Then
             assertThat(result.getCurrentMonth().getTotalExpense())
@@ -263,6 +306,11 @@ class StatisticsServiceTest {
             LocalDate startDate = LocalDate.of(2026, 1, 1);
             LocalDate endDate = LocalDate.of(2026, 1, 31);
             int limit = 5;
+            AuthDto authDto = AuthDto.builder()
+                    .email("test@test.com")
+                    .serviceType(ServiceType.USER)
+                    .userIdx(testUser.getIdx())
+                    .build();
 
             List<CategorySummary> summaries = Arrays.asList(
                     CategorySummary.builder()
@@ -272,13 +320,16 @@ class StatisticsServiceTest {
                             .build()
             );
 
-            when(userRepository.findByUserId("testId")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
             when(ledgerRepository.getTopCategories(eq(testUser), eq(startDate), eq(endDate), eq(limit)))
                     .thenReturn(summaries);
 
             // When
-            List<CategoryStatsResponse> result = statisticsService.getTopCategories(
-                    "testId", startDate, endDate, limit);
+            ResponseEntity<?> responseEntity = statisticsService.getTopCategories(
+                    authDto, startDate, endDate, limit);
+            ApiResponseVo<?> apiResponse = (ApiResponseVo<?>) responseEntity.getBody();
+            @SuppressWarnings("unchecked")
+            List<CategoryStatsResponse> result = (List<CategoryStatsResponse>) apiResponse.getContent();
 
             // Then
             assertThat(result).hasSize(1);

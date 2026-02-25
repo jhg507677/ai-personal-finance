@@ -11,12 +11,10 @@ import lombok.Setter;
 public class AuthDto {
   private Long userIdx;
   private Long adminIdx;
-  private String userId;
   private String email;
   private ServiceType serviceType;
   public String getAuthId(){
-    if(serviceType == ServiceType.USER) return userId;
-    else return email;
+    return email;
   }
   public Long getAuthIdx(){
     if(serviceType == ServiceType.USER) return userIdx;

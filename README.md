@@ -35,7 +35,7 @@
 ### 2.2 백엔드
 - **프레임워크:** Spring Boot 3.0+
 - **언어:** Java 17+
-- **데이터 접근:** Spring Data JPA
+- **데이터 접근:** Spring Data JPA, Querydsl
 - **데이터베이스:** MySQL 8.0+
 - **빌드 도구:** Gradle
 - **API 문서화:** Swagger  

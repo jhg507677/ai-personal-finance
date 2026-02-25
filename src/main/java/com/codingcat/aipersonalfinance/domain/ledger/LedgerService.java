@@ -2,23 +2,18 @@ package com.codingcat.aipersonalfinance.domain.ledger;
 
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerCreateRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerResponse;
-import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchCondition;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerUpdateRequest;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
-import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
+import com.codingcat.aipersonalfinance.module.response.PageResponse;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
 
 import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
 
-import com.querydsl.core.BooleanBuilder;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +33,7 @@ public class LedgerService {
   // 거래 내역 생성
   @Transactional
   public ResponseEntity<?> createLedger(AuthDto authDto, LedgerCreateRequest request) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
     Ledger ledger = request.toEntity(user);
     Ledger savedLedger = ledgerRepository.save(ledger);
     return sendApiOK(LedgerResponse.from(savedLedger));
@@ -47,7 +42,7 @@ public class LedgerService {
   // 거래 내역 조회
   public ResponseEntity<?> getLedger(AuthDto authDto, Long ledgerId) {
     Ledger ledger = findLedgerById(ledgerId);
-    validateLedgerOwnership(authDto.getUserId(), ledger);
+    validateLedgerOwnership(authDto.getEmail(), ledger);
     return sendApiOK(LedgerResponse.from(ledger));
   }
 
@@ -56,7 +51,7 @@ public class LedgerService {
   public ResponseEntity<?> updateLedger(
       AuthDto authDto, Long ledgerId, LedgerUpdateRequest request) {
     Ledger ledger = findLedgerById(ledgerId);
-    validateLedgerOwnership(authDto.getUserId(), ledger);
+    validateLedgerOwnership(authDto.getEmail(), ledger);
 
     ledger.update(
         request.getType(),
@@ -73,66 +68,26 @@ public class LedgerService {
   @Transactional
   public ResponseEntity<?> deleteLedger(AuthDto authDto, Long ledgerId) {
     Ledger ledger = findLedgerById(ledgerId);
-    validateLedgerOwnership(authDto.getUserId(), ledger);
+    validateLedgerOwnership(authDto.getEmail(), ledger);
     ledger.sDelete();
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", null, null);
+    return sendApiOK(null);
   }
 
+  // 거래 내역 목록 조회
   public ResponseEntity<?> getLedgerList(
       AuthDto authDto, LedgerSearchRequest condition, Pageable pageable) {
-    User user = findUserByUserId(authDto.getUserId());
-
-    List<Ledger> ledgers = findLedgersByCondition(user, condition);
-
-    List<LedgerResponse> responses =
-        ledgers.stream().map(LedgerResponse::from).collect(Collectors.toList());
-
-    int start = (int) pageable.getOffset();
-    int end = Math.min((start + pageable.getPageSize()), responses.size());
-    List<LedgerResponse> pagedResponses = responses.subList(start, end);
-
-    Page<LedgerResponse> page = new PageImpl<>(pagedResponses, pageable, responses.size());
-
-    return ApiResponseUtil.sendApiResponse(
-        HttpStatus.OK, "sm.common.success.default", "success", page, null);
+    User user = findUserByEmail(authDto.getEmail());
+    Page<Ledger> ledgers = ledgerRepository.findByPageInLedger(user, condition, pageable);
+    Page<LedgerResponse> responses = ledgers.map(LedgerResponse::from);
+    return sendApiOK(PageResponse.from(responses));
   }
 
   /**
-   * 검색 조건에 따라 거래 내역을 조회합니다.
+   * 이메일로 사용자를 찾습니다.
    */
-  private List<Ledger> findLedgersByCondition(User user, LedgerSearchRequest condition) {
-    QLedger ledger = QLedger.ledger;
-    BooleanBuilder builder = new BooleanBuilder();
-
-    builder.and(ledger.user.eq(user));
-
-    if (condition.getType() != null) builder.and(ledger.type.eq(condition.getType()));
-    if (condition.getCategory() != null) builder.and(ledger.category.eq(condition.getCategory()));
-
-    if (condition.getStartDate() != null &&
-      condition.getEndDate() != null) {
-      builder.and(
-        ledger.recordedDate.between(
-          condition.getStartDate(),
-          condition.getEndDate()
-        )
-      );
-    }
-
-    return queryFactory
-      .selectFrom(ledger)
-      .where(builder)
-      .orderBy(ledger.recordedDate.desc())
-      .fetch();
-  }
-
-  /**
-   * 사용자 ID로 사용자를 찾습니다.
-   */
-  private User findUserByUserId(String userId) {
+  private User findUserByEmail(String email) {
     return userRepository
-        .findByUserId(userId)
+        .findByEmail(email)
         .orElseThrow(
             () ->
                 new CustomException(
@@ -158,8 +113,8 @@ public class LedgerService {
   /**
    * 거래 내역의 소유자를 검증합니다.
    */
-  private void validateLedgerOwnership(String userId, Ledger ledger) {
-    if (!ledger.getUser().getUserId().equals(userId)) {
+  private void validateLedgerOwnership(String email, Ledger ledger) {
+    if (!ledger.getUser().getEmail().equals(email)) {
       throw new CustomException(
           HttpStatus.FORBIDDEN,
           "sm.ledger.fail.access_denied",

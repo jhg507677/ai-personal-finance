@@ -29,12 +29,6 @@ public class AuthService {
   private final UserRepository userRepository;
 
 
-  /*** 유저 아이디로 유저 정보 가져오기*/
-  public User findByUserId(String userId) {
-    return userRepository.findByUserId(userId)
-      .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "sm.common.fail.invalid_invalid_request","로그인 할 수없는 계정입니다."));
-  }
-
   /*** 유저 이메일로 유저 정보 가져오기*/
   public User findByEmail(String email) {
     return userRepository.findByEmail(email)

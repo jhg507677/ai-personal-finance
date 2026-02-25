@@ -43,7 +43,8 @@ public class StatisticsController {
     public ResponseEntity<?> getCategoryStatistics(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
         return statisticsService.getCategoryStatistics(userPrincipal.getAuthDto(), startDate, endDate);
     }
 
@@ -55,7 +56,8 @@ public class StatisticsController {
     public ResponseEntity<?> getPaymentMethodStatistics(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
         return statisticsService.getPaymentMethodStatistics(userPrincipal.getAuthDto(), startDate, endDate);
     }
 

@@ -39,7 +39,7 @@ public class BudgetService {
   // 예상 생성
   @Transactional
   public ResponseEntity<?> createBudget(AuthDto authDto, BudgetCreateRequest request) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
 
     // 같은 카테고리, 같은 기간에 예산이 이미 존재하는지 확인
     validateDuplicatePeriod(user, request);
@@ -54,14 +54,14 @@ public class BudgetService {
     Budget budget = findBudgetById(budgetId);
 
     // 예산 소유자 검사
-    validateBudgetOwnership(authDto.getUserId(), budget);
+    validateBudgetOwnership(authDto.getEmail(), budget);
     return sendApiOK(BudgetResponse.from(budget));
   }
 
   // 예산 사용 현황 조회
   public ResponseEntity<?> getBudgetUsage(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(authDto.getUserId(), budget);
+    validateBudgetOwnership(authDto.getEmail(), budget);
 
     // 해당 기간 내 실제 지출 집계
     BigDecimal totalSpent =
@@ -110,7 +110,7 @@ public class BudgetService {
   public ResponseEntity<?> updateBudget(
       AuthDto authDto, Long budgetId, BudgetUpdateRequest request) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(authDto.getUserId(), budget);
+    validateBudgetOwnership(authDto.getEmail(), budget);
 
     budget.update(request);
 
@@ -121,14 +121,14 @@ public class BudgetService {
   @Transactional
   public ResponseEntity<?> sDeleteBudget(AuthDto authDto, Long budgetId) {
     Budget budget = findBudgetById(budgetId);
-    validateBudgetOwnership(authDto.getUserId(), budget);
+    validateBudgetOwnership(authDto.getEmail(), budget);
     budget.sDelete();
     return sendApiOK(null);
   }
 
   // 예산 목록 조회
   public ResponseEntity<?> getBudgetList(AuthDto authDto) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
     List<Budget> budgets = budgetRepository.findByUserAndIsActiveTrue(user);
     List<BudgetResponse> responses =
         budgets.stream()
@@ -152,11 +152,11 @@ public class BudgetService {
   }
 
   /**
-   * 사용자 ID로 사용자를 찾습니다.
+   * 이메일로 사용자를 찾습니다.
    */
-  private User findUserByUserId(String userId) {
+  private User findUserByEmail(String email) {
     return userRepository
-        .findByUserId(userId)
+        .findByEmail(email)
         .orElseThrow(
             () ->
                 new CustomException(
@@ -180,8 +180,8 @@ public class BudgetService {
   /**
    * 예산의 소유자를 검증합니다.
    */
-  private void validateBudgetOwnership(String userId, Budget budget) {
-    if (!budget.getUser().getUserId().equals(userId)) {
+  private void validateBudgetOwnership(String email, Budget budget) {
+    if (!budget.getUser().getEmail().equals(email)) {
       throw new CustomException(
           HttpStatus.FORBIDDEN,
           "sm.budget.fail.access_denied",

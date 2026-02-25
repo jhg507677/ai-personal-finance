@@ -36,7 +36,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLRestriction("deleted_dt IS NULL")
+@SQLRestriction("deleted_at IS NULL")
 public class Ledger extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,7 +77,6 @@ public class Ledger extends BaseEntity {
   @PastOrPresent
   @Column(name = "recorded_date", nullable = false)
   private LocalDate recordedDate;
-  private LocalDateTime deletedAt;
 
   @Schema(description = "정기 거래로부터 자동 생성되었는지 여부")
   @Column(name = "is_auto_generated", nullable = false)

@@ -1,9 +1,13 @@
 package com.codingcat.aipersonalfinance.domain.ledger;
 
+import static com.codingcat.aipersonalfinance.module.response.PageResponse.getOrderSpecifiers;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.CategorySummary;
+import com.codingcat.aipersonalfinance.domain.ledger.dto.LedgerSearchRequest;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.MonthlySummary;
 import com.codingcat.aipersonalfinance.domain.ledger.dto.PaymentMethodSummary;
 import com.codingcat.aipersonalfinance.domain.user.User;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -11,6 +15,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 통계 조회를 위한 커스텀 Repository 구현
@@ -20,6 +27,54 @@ import lombok.RequiredArgsConstructor;
 public class LedgerRepositoryImpl implements LedgerRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    // 조건에 맞는 거래 내역 가져오기
+    @Override
+    public Page<Ledger> findByPageInLedger(
+      User user,
+      LedgerSearchRequest condition,
+      Pageable pageable
+    ) {
+      QLedger qLedger = QLedger.ledger;
+
+      BooleanBuilder builder = new BooleanBuilder();
+      builder.and(qLedger.user.eq(user));
+
+      if (condition.getType() != null) builder.and(qLedger.type.eq(condition.getType()));
+      if (condition.getCategory() != null) builder.and(qLedger.category.eq(condition.getCategory()));
+      if (condition.getStartDate() != null && condition.getEndDate() != null) {
+        builder.and(
+          qLedger.recordedDate.between(
+            condition.getStartDate(),
+            condition.getEndDate()
+          )
+        );
+      }
+
+      // 🔥 Sort 변환
+      List<OrderSpecifier<?>> orders =
+        getOrderSpecifiers(
+          pageable,
+          Ledger.class,
+          "ledger"
+        );
+
+      List<Ledger> content = queryFactory
+        .selectFrom(qLedger)
+        .where(builder)
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .orderBy(orders.toArray(new OrderSpecifier[0]))
+        .fetch(); // 리스트
+
+      Long total = queryFactory
+        .select(qLedger.count())
+        .from(qLedger)
+        .where(builder)
+        .fetchOne(); // 하나의 결과를 가져오고 싶을때 fetchFirst는 limit을 붙여서 에러 X
+
+      return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
 
     @Override
     public List<MonthlySummary> getMonthlySummary(User user, LocalDate startDate, LocalDate endDate) {

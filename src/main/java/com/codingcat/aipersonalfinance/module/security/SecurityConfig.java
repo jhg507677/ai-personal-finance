@@ -23,6 +23,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -57,8 +61,9 @@ public class SecurityConfig {
 
   // authenticated 인증이 필요한 곳
   @Bean
-  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
     http
+      .cors(cors -> cors.configurationSource(corsConfigurationSource))
       .csrf(AbstractHttpConfigurer::disable)
       .formLogin(AbstractHttpConfigurer::disable)
       .httpBasic(AbstractHttpConfigurer::disable)

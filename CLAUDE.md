@@ -1,228 +1,106 @@
-# Spring Boot Backend Development Rules
+# Spring Boot Backend Development Guidelines
+Project: **AI Personal Finance Manager**
 
-Project: [AI 가계부]
-
-## 1. Overview
-Spring Boot 기반 API 서버
-
-## 2. Tech Stack
+## Tech Stack
 -   Runtime: Java 17
 -   Framework: Spring Boot
--   ORM: JPA
--   Database: H2 (test) / MySQL (prod)
--   Auth: JWT
+-   ORM: JPA (Hibernate), QueryDSL
+-   Database: H2 (Test), MySQL (Production)
+-   Auth: JWT, Oauth2(Google)
 
 ## 3. Project Structure
-    src/
-    ├── controller      # 모든 Controller (API Entry Point)
-    ├── domain/         # 도메인 영역 (Service, Entity, Repository)
-    ├── domain/{domain}/dto      # response, request ex)domain/ledger/dto/AddLedgerRequest
-    ├── module/         # 공통 모듈 (config, exception, response, aop, util 등)
 
-### 원칙
-- Controller는 요청/응답 처리만 담당
-- 권한 체크는 AOP 기반 인가 처리
-- 비즈니스 로직은 domain에서 처리
-- 공통 코드는 module에 위치
-- 과도한 계층 분리 지양 (모놀리식 기준 단순 구조 유지)
-- 테스트코드는 반드시 필수
-- delete 메서드는 sDelete(soft 방식), hDelete(hard 방식)으로 네이밍 구분
-- service.java 파일의 메서드들에 한줄 주석 달아줘 ex) 예산 목록 조회
+    src/
+    ├── controller          # API entry points
+    ├── domain/{domain}     # Domain layer (Service, Entity, Repository)
+    ├── domain/{domain}/dto # *request, *response
+    ├── module/             # Shared modules (config, exception, response, aop, util, etc.)
+
+### Architectural Principles
+-   Controllers handle request/response mapping only (records allowed for simple DTOs).
+-   Authorization must be implemented using AOP-based access control.
+-   Business logic belongs strictly to the domain layer.
+-   Shared utilities must reside in the module package.
+-   Avoid unnecessary layering in a monolithic architecture.
+-   Test code is mandatory.
+-   Delete methods naming:
+  -   `sDelete()` → Soft delete
+  -   `hDelete()` → Hard delete
+-   Every service method must include a single-line comment explaining
+    its purpose.
+
 
 ## 4. API Conventions
-- RESTful 설계 원칙 준수
-- 클라이언트 API: `/api/v1/client/**`
-- 관리자 API: `/api/v1/admin/**`
-- `@RequestMapping` 접두사 사용 금지 (전체 검색 지원 목적)
-- 모든 응답은 `ApiResponseUtil` 사용
-  ``` java
-  return ApiResponseUtil.sendApiResponse(
-  HttpStatus.OK,
-  "sm.common.success.default",
-  "success",
-  data,
-  null
-  );
-  ```
-## 5. Exception 처리
-- 모든 예외는 `CustomException` 사용
-  ``` java
-  repository.findByXxx()
-  .orElseThrow(() -> new CustomException(
-  HttpStatus.BAD_REQUEST,
-  "project.method.fail.reason",
-  "메시지"
-  ));
-  ```
-  에러 코드 형식:{project}.{method}.{success|fail}.{detail}
-  예:sm.create_budget.fail.duplicate_period
-- `GlobalExceptionHandler`에서 공통 처리
-
-## 7. Entity 설계 규칙
-- 모든 테이블 PK는 autoIncrement 사용
-- PK 컬럼명은 `{table}_idx` 형식으로 통일
-예: - user_idx - budget_idx - memo_idx
-- 날짜 타입 필드: `Date`
-- 날짜 + 시간 타입 필드: `~At`
-- 예: startDate, endDate (날짜 필드), createdAt, deletedAt (날짜+시간 필드)
-- 모든 Entity는 `BaseEntity` 상속
-
-## 9. 인증 처리
-- Controller에서 `@AuthenticationPrincipal UserPrincipal` 사용
-- Service 호출 시 `userPrincipal.getAuthDto()` 전달
-예:
+-   Follow RESTful design principles.
+-   Client API prefix: `/api/v1/client/**`
+-   Admin API prefix: `/api/v1/admin/**`
+-   Do NOT use class-level `@RequestMapping` prefixes.
+-   All responses must use `ApiResponseUtil`.
+Example:
 ``` java
-service.method(userPrincipal.getAuthDto(), request);
+return ApiResponseUtil.sendApiResponse(
+    HttpStatus.OK,
+    "sm.common.success.default",
+    "success",
+    data,
+    null
+);
 ```
 
-## 10. Request DTO 규칙
--   모든 Request DTO는 `toEntity()` 메서드 구현 필수
--   연관 엔티티는 파라미터로 전달받아 생성
-    예:
-``` java
-public Entity toEntity(User user) {
-  return Entity.builder()
-    .user(user)
-    .field1(this.field1)
-    .build();
-}
-```
+## 5. Exception Handling
+-   All Unchecked exceptions must use `CustomException`.
+Error Code Format:
+    {project}.{method}.{success|fail}.{detail}
+Example:
+    sm.create_budget.fail.duplicate_period
+-   All exceptions must be handled in `GlobalExceptionHandler`.
 
-## 11. Validation 규칙
+## 6. Entity Design Rules
+-   All tables must use auto-increment primary keys.
+-   Primary key naming: `{table}_idx`
+-   Date-only fields: `Date`
+-   Date-time fields: `~At` suffix
+-   All entities must extend `BaseEntity`.
 
--   Request DTO에 `@Valid` 사용
--   검증 실패는 `GlobalExceptionHandler`에서
-    `MethodArgumentNotValidException` 처리
--   자동으로 BAD_REQUEST(400) 반환
--   커스텀 검증은 `jakarta.validation` 어노테이션 사용
-  -   @NotNull, @NotBlank, @Min, @Max 등
+## 7. Authentication Handling
+-   Use `@AuthenticationPrincipal UserPrincipal` in Controllers.
+-   Pass `userPrincipal.getAuthDto()` to Service methods.
 
-## 11-1. Update Request DTO 규칙
--   **Entity 및 create Request와 비교하여 필수 필드에 @Valid 조건 추가
--   필드별 추가 검증 (`@Positive`, `@Size` 등)
--   Entity의 `update()` 메서드: 모든 필드 직접 할당
-    - 필수 필드: 항상 할당
-    - 선택 필드: null이 오면 null로 설정 (값 삭제 의미)
+## 8. Request DTO Rules
+- All Request DTOs need validation check(spring-boot-starter-validation) 
+- All Request DTOs must implement a `toEntity()` method. 
+- Use `@Valid` on all Request DTOs.
+- All Response DTOs must implement a `toResponse()` method.
+
+## 10. Service Layer Rules
+-   Apply `@Transactional(readOnly = true)` at class level.
+-   Annotate write operations with `@Transactional`.
+-   Follow Single Responsibility Principle (SRP).
+-   Naming: `{Domain}Service`
 
 ------------------------------------------------------------------------
 
-## 11-2. API Response 헬퍼 메서드
--   성공 응답은 특정한 메시지가 필요한 경우가 아니라면 `sendApiOK()` 메서드 사용
-  ex) return sendApiOK(BudgetResponse.from(budget));
-------------------------------------------------------------------------
+## 11. Full Flow Examples
 
-## 12. Service 레이어 규칙
--   클래스 레벨: `@Transactional(readOnly = true)`
--   쓰기 메서드에만 `@Transactional` 명시
--   단일 책임 원칙(SRP) 준수
--   클래스명: `{Domain}Service`
-예:
-
+### Create (POST)
 ``` java
-@Service
-@Transactional(readOnly = true)
-public class SomeService {
-
-    public Data get() { }
-
-    @Transactional
-    public void create() { }
-}
-```
-
-## 14. 전체 플로우 예시
-
-### 14-1. Create (POST)
-``` java
-// Controller
 @PostMapping("/api/v1/client/resources")
 public ResponseEntity<?> create(
-  @AuthenticationPrincipal UserPrincipal userPrincipal,
-  @Valid @RequestBody CreateRequest request
+    @AuthenticationPrincipal UserPrincipal userPrincipal,
+    @Valid @RequestBody CreateRequest request
 ) {
-  return service.create(userPrincipal.getAuthDto(), request);
-}
-
-// Request DTO
-@Getter
-public class CreateRequest {
-  @NotNull(message = "이름은 필수입니다")
-  @Size(min = 1, max = 100)
-  private String name;
-
-  @NotNull(message = "금액은 필수입니다")
-  @Positive
-  private BigDecimal amount;
-
-  public Entity toEntity(User user) {
-    return Entity.builder()
-        .user(user)
-        .name(this.name)
-        .amount(this.amount)
-        .build();
-  }
-}
-
-// Service
-@Service
-@Transactional(readOnly = true)
-public class SomeService {
-
-  @Transactional
-  public ResponseEntity<?> create(AuthDto authDto, CreateRequest request) {
-    User user = userRepository.findByUserId(authDto.getUserId())
-      .orElseThrow(() -> new CustomException(
-        HttpStatus.BAD_REQUEST,
-        "sm.common.fail.user_not_found",
-        "올바르지 않은 사용자 정보입니다."
-      ));
-
-    Entity entity = request.toEntity(user);
-    Entity saved = repository.save(entity);
-
-    return sendApiOK(EntityResponse.from(saved));
-  }
+    return service.create(userPrincipal.getAuthDto(), request);
 }
 ```
 
-### 14-2. Update (PUT)
+### Update (PUT)
 ``` java
-// Controller
 @PutMapping("/api/v1/client/resources/{id}")
 public ResponseEntity<?> update(
-  @AuthenticationPrincipal UserPrincipal userPrincipal,
-  @PathVariable Long id,
-  @Valid @RequestBody UpdateRequest request
+    @AuthenticationPrincipal UserPrincipal userPrincipal,
+    @PathVariable Long id,
+    @Valid @RequestBody UpdateRequest request
 ) {
-  return service.update(userPrincipal.getAuthDto(), id, request);
-}
-
-// Request DTO (모든 필드 필수)
-@Getter
-public class UpdateRequest {
-  @NotNull(message = "이름은 필수입니다")
-  @Size(min = 1, max = 100)
-  private String name;
-
-  @NotNull(message = "금액은 필수입니다")
-  @Positive
-  private BigDecimal amount;
-  // ... 모든 필드에 @NotNull
-}
-
-// Entity
-public void update(UpdateRequest request) {
-  this.name = request.getName();
-  this.amount = request.getAmount();
-  // ... 모든 필드 직접 할당
-}
-
-// Service
-@Transactional
-public ResponseEntity<?> update(AuthDto authDto, Long id, UpdateRequest request) {
-  Entity entity = findEntityById(id);
-  validateOwnership(authDto.getUserId(), entity);
-  entity.update(request);
-  return sendApiOK(EntityResponse.from(entity));
+    return service.update(userPrincipal.getAuthDto(), id, request);
 }
 ```

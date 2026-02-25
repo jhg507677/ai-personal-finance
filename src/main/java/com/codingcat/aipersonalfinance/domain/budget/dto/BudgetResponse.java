@@ -29,8 +29,8 @@ public class BudgetResponse {
   private Boolean isActive;
   private BigDecimal alertThreshold;
   private Boolean isAlertSent;
-  private LocalDateTime createdDateTime;
-  private LocalDateTime modifiedDateTime;
+  private LocalDateTime createdAt;
+  private LocalDateTime modifiedAt;
 
   /**
    * Budget 엔티티를 BudgetResponse DTO로 변환합니다.
@@ -47,8 +47,8 @@ public class BudgetResponse {
         .isActive(budget.getIsActive())
         .alertThreshold(budget.getAlertThreshold())
         .isAlertSent(budget.getIsAlertSent())
-        .createdDateTime(budget.getCreatedDateTime())
-        .modifiedDateTime(budget.getModifiedDateTime())
+        .createdAt(budget.getCreatedAt())
+        .modifiedAt(budget.getModifiedAt())
         .build();
   }
 }

@@ -3,7 +3,6 @@ package com.codingcat.aipersonalfinance.module.config.oauth;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import java.util.Map;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -36,11 +35,12 @@ public class Oauth2UserCustomService extends DefaultOAuth2UserService {
       .orElseGet(() ->
         User.builder()
           .email(email)
-          .userId(UUID.randomUUID().toString())
+          .nickname(name)
+          .password("")
           .build()
       );
 
-    user.changeName(name);
+    user.changeNickname(name);
     userRepository.save(user);
   }
 }

@@ -8,11 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AddUserRequest {
-  @NotBlank(message = "id값은 필수입니다.")
-  private String userId;
-
-  @NotBlank(message = "성명은 필수입니다.")
-  private String name;
+  @NotBlank(message = "닉네임은 필수입니다.")
+  private String nickname;
 
   @NotBlank(message = "이메일은 필수입니다.")
   private String email;
@@ -22,8 +19,7 @@ public class AddUserRequest {
 
   public User toEntity(){
     return User.builder()
-      .userId(userId)
-      .name(name)
+      .nickname(nickname)
       .email(email)
       .password(password)
       .build();

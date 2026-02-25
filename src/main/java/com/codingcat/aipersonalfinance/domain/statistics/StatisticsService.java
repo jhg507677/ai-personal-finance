@@ -7,6 +7,7 @@ import com.codingcat.aipersonalfinance.domain.ledger.dto.PaymentMethodSummary;
 import com.codingcat.aipersonalfinance.domain.user.User;
 import com.codingcat.aipersonalfinance.domain.user.UserRepository;
 import com.codingcat.aipersonalfinance.module.exception.CustomException;
+import com.codingcat.aipersonalfinance.module.response.ApiResponseUtil;
 import com.codingcat.aipersonalfinance.module.security.AuthDto;
 
 import static com.codingcat.aipersonalfinance.module.response.ApiResponseUtil.sendApiOK;
@@ -34,7 +35,7 @@ public class StatisticsService {
 
   public ResponseEntity<?> getMonthlyStatistics(
       AuthDto authDto, LocalDate startDate, LocalDate endDate) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
 
     List<MonthlySummary> summaries = ledgerRepository.getMonthlySummary(user, startDate, endDate);
 
@@ -54,17 +55,15 @@ public class StatisticsService {
     return sendApiOK( responses);
   }
 
+  // 카테고리별 통계 조회
   public ResponseEntity<?> getCategoryStatistics(
       AuthDto authDto, LocalDate startDate, LocalDate endDate) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
 
     List<CategorySummary> summaries =
         ledgerRepository.getCategorySummary(user, startDate, endDate);
 
-    if (summaries.isEmpty()) {
-      return ApiResponseUtil.sendApiResponse(
-          HttpStatus.OK, "sm.common.success.default", "success", List.of());
-    }
+    if (summaries.isEmpty()) return ApiResponseUtil.sendApiOK(List.of());
 
     // 전체 지출 합계 계산
     BigDecimal totalExpense =
@@ -101,7 +100,7 @@ public class StatisticsService {
 
   public ResponseEntity<?> getPaymentMethodStatistics(
       AuthDto authDto, LocalDate startDate, LocalDate endDate) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
 
     List<PaymentMethodSummary> summaries =
         ledgerRepository.getPaymentMethodSummary(user, startDate, endDate);
@@ -121,7 +120,7 @@ public class StatisticsService {
   }
 
   public ResponseEntity<?> getTrendAnalysis(AuthDto authDto, LocalDate currentMonth) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
 
     // 전월과 당월의 첫날/마지막날 계산
     LocalDate currentStart = currentMonth.withDayOfMonth(1);
@@ -182,7 +181,7 @@ public class StatisticsService {
 
   public ResponseEntity<?> getTopCategories(
       AuthDto authDto, LocalDate startDate, LocalDate endDate, int limit) {
-    User user = findUserByUserId(authDto.getUserId());
+    User user = findUserByEmail(authDto.getEmail());
 
     List<CategorySummary> summaries =
         ledgerRepository.getTopCategories(user, startDate, endDate, limit);
@@ -221,9 +220,9 @@ public class StatisticsService {
 
   // === Private Helper Methods ===
 
-  private User findUserByUserId(String userId) {
+  private User findUserByEmail(String email) {
     return userRepository
-        .findByUserId(userId)
+        .findByEmail(email)
         .orElseThrow(
             () ->
                 new CustomException(

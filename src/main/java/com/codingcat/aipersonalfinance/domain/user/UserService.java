@@ -31,8 +31,8 @@ public class UserService {
     HttpServletResponse response,
     AddUserRequest request
   ) {
-    // 아이디 검증
-    User user = authService.findByUserId(request.getUserId());
+    // 이메일 검증
+    User user = authService.findByEmail(request.getEmail());
 
     // 비밀번호 검증
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
